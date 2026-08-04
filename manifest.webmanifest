@@ -1,0 +1,19 @@
+{
+  "name": "Tricorder — Type I",
+  "short_name": "Tricorder",
+  "description": "A working Star Trek: The Original Series tricorder. One file, no dependencies, fully offline.",
+  "start_url": "./tricorder.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#0a0a09",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%230d0d0c'/%3E%3Crect x='80' y='96' width='352' height='144' rx='24' fill='%235d7183'/%3E%3Ccircle cx='176' cy='368' r='72' fill='none' stroke='%23c9a227' stroke-width='14'/%3E%3Ccircle cx='176' cy='368' r='40' fill='none' stroke='%23c9a227' stroke-width='14'/%3E%3Ccircle cx='176' cy='368' r='12' fill='%23c9a227'/%3E%3Crect x='296' y='320' width='120' height='96' rx='16' fill='%232e2e2a'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
