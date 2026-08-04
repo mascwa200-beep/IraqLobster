@@ -1,0 +1,2043 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#0a0a09">
+<meta name="description" content="A working Star Trek: The Original Series tricorder. One file, no dependencies, fully offline.">
+<title>TRICORDER — TYPE I / STARFLEET ISSUE</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%230d0d0c'/%3E%3Crect x='10' y='12' width='44' height='18' rx='3' fill='%236f7f8e'/%3E%3Ccircle cx='22' cy='46' r='9' fill='none' stroke='%23c9a227' stroke-width='2'/%3E%3Ccircle cx='22' cy='46' r='4' fill='none' stroke='%23c9a227' stroke-width='2'/%3E%3Crect x='38' y='40' width='14' height='12' rx='2' fill='%232e2e2a'/%3E%3C/svg%3E">
+<style>
+/* =====================================================================
+   TOS TRICORDER — single file, zero dependencies, fully offline.
+   Everything below is hand-drawn in CSS/SVG/canvas. No images, no fonts,
+   no audio files, no network. Section banners mark the major parts.
+   ===================================================================== */
+
+/* ---------- 1. TOKENS -------------------------------------------- */
+:root{
+  /* case + hardware */
+  --case:#100f0d;          /* the black body                         */
+  --case-hi:#26241f;       /* raised edge                            */
+  --case-lo:#050504;       /* shadow / recess                        */
+  --panel:#1c1b17;         /* control panel plate                    */
+  --metal:#8c9099;         /* brushed aluminium trim                 */
+  --metal-dk:#565a60;
+  --gold:#c9a227;          /* the gold vent fabric                   */
+  --strap:#2a1d12;         /* leather shoulder strap                 */
+  --strap-hi:#4a3421;
+  /* lamps (the three "hat pin" indicators)                          */
+  --lamp-red:#e0361f;
+  --lamp-amb:#f0a63c;
+  --lamp-grn:#37d17a;
+  /* screen fields — production used interchangeable inserts         */
+  --scr-science:#5d7183;   /* plain blue-grey field (Spock's unit)   */
+  --scr-medical:#05070a;   /* black field (McCoy's unit)             */
+  --scr-data:#0b1a14;
+  /* TOS graphic primaries                                           */
+  --ink-amber:#f5d03a;
+  --ink-red:#e2483d;
+  --ink-blue:#63b8ff;
+  --ink-green:#58e08a;
+  --ink-white:#ecead9;
+  /* Microgramma / Eurostile were the era's faces; nothing is
+     downloaded, so we approximate with a wide condensed system stack. */
+  --face:"Eurostile","Microgramma","Bank Gothic","Square721 BT","Helvetica Neue Condensed","Arial Narrow","Roboto Condensed",system-ui,sans-serif;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;background:#000;color:var(--ink-white);
+  font-family:var(--face);text-transform:uppercase;letter-spacing:.12em;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;overscroll-behavior:none;
+  /* faint set-lighting falloff so the prop sits in a 1960s soundstage */
+  background:radial-gradient(120% 90% at 50% 20%,#191713 0%,#050505 60%,#000 100%);
+}
+
+/* ---------- 2. STAGE + DEVICE SHELL ------------------------------ */
+#stage{
+  position:relative;width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  align-items:flex-end;padding:6px 6px 86px;perspective:1500px;
+}
+#device{
+  position:relative;
+  width:min(96vw,420px);
+  height:min(100%,880px);
+  transform-style:preserve-3d;
+  transition:transform .5s cubic-bezier(.2,.7,.25,1);
+  /* bottom-anchored: the empty band above the case is exactly the room the
+     hood needs when it swings up, so nothing has to be translated. */
+  transform:scale(.985);
+}
+#device.open{transform:scale(1)}
+
+/* the shoulder strap runs behind the case, over the left shoulder */
+#strap{
+  position:absolute;left:-4%;top:-6%;width:34%;height:118%;
+  background:linear-gradient(100deg,var(--strap) 0%,var(--strap-hi) 45%,var(--strap) 70%,#1a120b 100%);
+  /* pushed back in 3D: inside a preserve-3d parent, painting order is by
+     depth, so without this the strap would cover the flipped-up hood. */
+  transform:rotate(-9deg) translateZ(-60px);border-radius:4px;
+  box-shadow:inset 0 0 12px #000, 0 6px 18px rgba(0,0,0,.7);
+  opacity:.95;
+}
+#strap::after{ /* stitching */
+  content:"";position:absolute;inset:6px 5px;border:1px dashed rgba(200,170,120,.25);border-radius:3px;
+}
+
+/* the case itself */
+#case{
+  position:absolute;left:7%;right:0;bottom:0;top:27%;
+  background:
+    linear-gradient(180deg,#1a1916 0%,var(--case) 22%,#0b0b09 100%);
+  border-radius:14px;
+  box-shadow:
+     inset 0 1px 0 var(--case-hi),
+     inset 0 -2px 6px #000,
+     0 22px 44px rgba(0,0,0,.8),
+     0 2px 0 #000;
+  border:1px solid #2b2925;
+  overflow:hidden;
+}
+/* hammertone speckle, the way the prop's paint reads under key light */
+#case::before{
+  content:"";position:absolute;inset:0;opacity:.5;pointer-events:none;
+  background-image:
+    radial-gradient(circle at 20% 30%,rgba(255,255,255,.045) 0 1px,transparent 1px),
+    radial-gradient(circle at 70% 60%,rgba(255,255,255,.035) 0 1px,transparent 1px),
+    radial-gradient(circle at 45% 85%,rgba(255,255,255,.03) 0 1px,transparent 1px);
+  background-size:13px 13px,17px 17px,23px 23px;
+}
+
+/* ---------- 3. THE HOOD (pivots up; screen on its inner face) ---- */
+#hood{
+  position:absolute;left:7%;right:0;top:27%;height:27%;
+  transform-origin:50% 0%;
+  transform-style:preserve-3d;
+  transition:transform .65s cubic-bezier(.3,.75,.25,1);
+  transform:rotateX(0deg);
+  z-index:6;
+}
+#device.open #hood{transform:rotateX(-168deg)}
+.hood-face{
+  position:absolute;inset:0;border-radius:12px 12px 6px 6px;
+  backface-visibility:hidden;overflow:hidden;
+}
+/* outer: what you see with the tricorder shut */
+#hood-out{
+  background:linear-gradient(180deg,#232019 0%,#151310 40%,#0a0908 100%);
+  border:1px solid #33302a;
+  box-shadow:inset 0 1px 0 #3a362e, 0 6px 14px rgba(0,0,0,.7);
+  display:flex;align-items:center;justify-content:center;
+}
+#hood-out .plate{
+  width:74%;height:52%;border-radius:5px;
+  background:linear-gradient(160deg,var(--metal) 0%,var(--metal-dk) 55%,#3c4046 100%);
+  box-shadow:inset 0 0 0 1px #24262a, inset 0 2px 5px rgba(255,255,255,.25), 0 2px 6px #000;
+  display:flex;align-items:center;justify-content:center;
+  font-size:clamp(8px,2.1vw,12px);letter-spacing:.42em;color:#14161a;
+  text-shadow:0 1px 0 rgba(255,255,255,.3);
+}
+#hood-out .grip{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
+  width:40%;height:5px;border-radius:3px;background:linear-gradient(90deg,#000,#3a352c,#000)}
+/* inner: the screen face, revealed when the hood is up */
+#hood-in{
+  transform:rotateX(180deg) translateZ(1px);
+  background:linear-gradient(180deg,#0d0c0a,#191713);
+  border:1px solid #34302a;
+  padding:5px;
+}
+#screen-bezel{
+  position:absolute;inset:5px;border-radius:6px;
+  background:#000;box-shadow:inset 0 0 0 2px #3b3730, inset 0 0 22px #000;
+  overflow:hidden;
+}
+#screen{display:block;width:100%;height:100%}
+
+/* ---------- 4. UPPER FACE: lamps, vent, moiré window ------------- */
+#face{position:absolute;inset:0;padding:6.5% 5% 3%;display:flex;flex-direction:column;gap:2.2%}
+
+/* the hood latch. The flipped-up hood shows its backface, which cannot be
+   clicked, so the latch is the control that always works. */
+#latch{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:7;
+  width:34%;height:15px;border-radius:0 0 7px 7px;cursor:pointer;
+  background:linear-gradient(180deg,var(--metal) 0%,var(--metal-dk) 60%,#2f3238 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 5px rgba(0,0,0,.8);
+  display:flex;align-items:center;justify-content:center;
+}
+#latch span{display:block;width:46%;height:4px;border-radius:2px;
+  background:repeating-linear-gradient(90deg,#1c1e22 0 2px,#9aa0a8 2px 4px)}
+#latch:active{filter:brightness(1.25)}
+
+.rowA{display:flex;gap:3.5%;align-items:stretch;height:30%}
+
+/* the three hat-pin indicator lamps */
+#lamps{display:flex;flex-direction:column;justify-content:space-around;align-items:center;width:9%}
+.lamp{
+  width:86%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#2c2b25,#121210);
+  border:1px solid #46433a;
+  box-shadow:inset 0 2px 3px rgba(0,0,0,.9);
+  position:relative;transition:box-shadow .12s,background .12s;
+}
+.lamp::after{content:"";position:absolute;inset:20%;border-radius:50%;
+  background:color-mix(in srgb,var(--c) 22%,#1d1c19);transition:background .12s,box-shadow .12s}
+.lamp.on{box-shadow:inset 0 0 6px rgba(0,0,0,.6),0 0 14px var(--c),0 0 30px var(--c)}
+.lamp.on::after{background:var(--c);box-shadow:0 0 10px var(--c)}
+#lampR{--c:var(--lamp-red)} #lampA{--c:var(--lamp-amb)} #lampG{--c:var(--lamp-grn)}
+
+/* the moiré window — two counter-rotating printed discs */
+#moire-window{
+  position:relative;height:86%;aspect-ratio:1;align-self:center;border-radius:50%;
+  background:#000;overflow:hidden;
+  box-shadow:inset 0 0 0 3px #47433a, inset 0 0 18px #000, 0 2px 6px #000;
+}
+#moire-window svg{position:absolute;inset:0;width:100%;height:100%}
+#disc1{transform-origin:50% 50%;animation:spinCW 6s linear infinite}
+#disc2{transform-origin:50% 50%;animation:spinCCW 9s linear infinite}
+@keyframes spinCW{to{transform:rotate(360deg)}}
+@keyframes spinCCW{to{transform:rotate(-360deg)}}
+#moire-window::after{ /* glass */
+  content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
+  background:linear-gradient(150deg,rgba(255,255,255,.20),transparent 45%);
+}
+
+/* the square gold vent — fine gold fabric behind a grille */
+#vent{
+  width:22%;align-self:center;aspect-ratio:1;border-radius:3px;position:relative;overflow:hidden;
+  background:
+    repeating-linear-gradient(90deg,rgba(0,0,0,.62) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(0deg,rgba(0,0,0,.62) 0 1px,transparent 1px 3px),
+    linear-gradient(150deg,#b99a35,#8f7420 45%,#5d4a11 100%);
+  box-shadow:inset 0 0 0 2px #2c2a24, inset 0 0 14px rgba(0,0,0,.7);
+  filter:saturate(.85);
+}
+
+/* ---------- 5. CONTROL PANEL ------------------------------------- */
+#panel{
+  background:linear-gradient(180deg,#222019,var(--panel));
+  border:1px solid #37342c;border-radius:8px;
+  box-shadow:inset 0 1px 0 #3d3930, 0 3px 8px rgba(0,0,0,.6);
+  padding:3.2% 3.6%;display:flex;flex-direction:column;gap:8px;
+  flex:1;justify-content:space-around;
+}
+#modebar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.btn{
+  appearance:none;border:1px solid #4a463c;border-radius:4px;
+  background:linear-gradient(180deg,#3a352c,#211f1a);
+  color:#cfc9b4;font:inherit;text-transform:uppercase;
+  font-size:clamp(8px,2.2vw,11px);letter-spacing:.16em;
+  padding:9px 2px;cursor:pointer;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 3px rgba(0,0,0,.6);
+  transition:transform .06s,background .12s,color .12s,box-shadow .12s;
+}
+.btn:active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(0,0,0,.7)}
+.btn.sel{
+  background:linear-gradient(180deg,#c9a227,#8a6f18);color:#140f02;
+  border-color:#e6c657;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 12px rgba(201,162,39,.45);
+}
+
+/* the row of small watch-crown buttons + two knurled knobs */
+.rowB{display:flex;align-items:center;gap:10px}
+#crowns{display:flex;gap:5px;flex:1}
+.crown{
+  flex:1;height:16px;border-radius:3px;
+  background:
+    repeating-linear-gradient(90deg,#9aa0a8 0 1px,#5c6067 1px 2px),
+    linear-gradient(180deg,#b7bcc3,#4d5158);
+  border:1px solid #2c2f34;box-shadow:0 1px 2px #000, inset 0 1px 0 rgba(255,255,255,.5);
+  cursor:pointer;transition:transform .06s,filter .12s;
+}
+.crown:active{transform:translateY(1px)}
+.crown.lit{filter:brightness(1.5) sepia(.6) hue-rotate(-15deg) saturate(3)}
+
+.knob{
+  width:46px;height:46px;border-radius:50%;position:relative;cursor:grab;flex:none;
+  background:
+    repeating-conic-gradient(from 0deg,#8c9099 0 3deg,#3f4349 3deg 6deg),
+    radial-gradient(circle,#6e727a,#2a2d31);
+  box-shadow:inset 0 0 0 3px #23262a, inset 0 3px 6px rgba(255,255,255,.28), 0 3px 6px #000;
+  touch-action:none;
+}
+.knob::after{
+  content:"";position:absolute;left:50%;top:8%;width:3px;height:34%;
+  background:#f0ece0;transform:translateX(-50%);border-radius:2px;box-shadow:0 0 4px #000;
+}
+.knob-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
+.knob-lab{font-size:8px;letter-spacing:.2em;color:#8d8875}
+
+/* ---------- 6. COMPARTMENTS -------------------------------------- */
+.comp{
+  border:1px solid #37342c;border-radius:8px;overflow:hidden;position:relative;
+  background:linear-gradient(180deg,#1a1814,#0c0b09);
+  box-shadow:inset 0 1px 0 #3a362e,0 3px 8px rgba(0,0,0,.6);
+}
+#comp-lower{flex:0 0 20%;min-height:66px;display:flex;align-items:center;justify-content:flex-start;padding:8px 14px}
+.comp-door{
+  position:absolute;inset:0;z-index:3;cursor:pointer;
+  background:linear-gradient(180deg,#232019,#121110 60%,#0a0908);
+  border-bottom:1px solid #3a362e;
+  transform-origin:50% 100%;transition:transform .5s cubic-bezier(.3,.8,.3,1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;letter-spacing:.3em;color:#6e6a5c;
+}
+.comp.open .comp-door{transform:rotateX(-105deg)}
+
+/* the detachable medical hand scanner ("salt shaker") */
+#scanner{
+  height:84%;aspect-ratio:.62;border-radius:5px 5px 8px 8px;
+  background:linear-gradient(160deg,#c9ccd2,#7e838b 45%,#3d4147);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 3px 8px #000;
+  position:relative;cursor:pointer;transition:transform .25s;
+}
+#scanner:active{transform:scale(.96)}
+#scanner::before{ /* the grooved head */
+  content:"";position:absolute;left:12%;right:12%;top:8%;height:26%;
+  background:repeating-linear-gradient(0deg,#2c2f33 0 2px,#aab0b7 2px 4px);border-radius:3px;
+}
+#scanner::after{content:"";position:absolute;left:26%;right:26%;bottom:12%;height:14%;
+  border-radius:3px;background:#1d1f22;box-shadow:inset 0 0 4px #000}
+#scanner.active{animation:scanPulse .55s ease-in-out infinite alternate}
+@keyframes scanPulse{to{box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 18px var(--lamp-grn),0 3px 8px #000}}
+#disc-rack{display:flex;gap:5px;align-items:center}
+.mini-disc{width:16px;height:16px;border-radius:50%;background:
+  repeating-radial-gradient(circle,#e8e4d4 0 1px,#111 1px 2px);box-shadow:0 1px 3px #000}
+
+/* ---------- 7. READOUT TICKER (how TOS made data readable) ------- */
+#ticker{
+  position:fixed;left:0;right:0;bottom:0;z-index:8;
+  background:linear-gradient(180deg,rgba(6,6,5,.92),rgba(0,0,0,.98));
+  border-top:1px solid #35322b;padding:8px 12px;cursor:pointer;
+  font-size:clamp(9px,2.4vw,12px);line-height:1.45;letter-spacing:.1em;
+  color:var(--ink-amber);min-height:56px;max-height:80px;overflow:hidden;
+  text-shadow:0 0 8px rgba(245,208,58,.25);
+}
+#ticker .who{color:#8d8875;letter-spacing:.28em;font-size:.82em}
+
+/* ---------- 8. OVERLAYS ------------------------------------------ */
+#boot{
+  position:fixed;inset:0;z-index:50;background:#000;color:var(--ink-amber);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  text-align:center;padding:24px;font-size:clamp(10px,2.6vw,13px);letter-spacing:.24em;
+}
+#boot small{display:block;color:#7d7866;letter-spacing:.14em;text-transform:none;
+  max-width:34ch;line-height:1.6;font-size:11px;margin-top:6px}
+#boot button{
+  margin-top:8px;padding:14px 26px;font:inherit;letter-spacing:.28em;
+  background:linear-gradient(180deg,#c9a227,#8a6f18);border:1px solid #e6c657;border-radius:5px;
+  color:#140f02;cursor:pointer;box-shadow:0 0 22px rgba(201,162,39,.35);
+}
+#modal{
+  position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.88);display:none;
+  align-items:center;justify-content:center;padding:18px;
+}
+#modal.show{display:flex}
+#modal .sheet{
+  max-width:520px;max-height:82vh;overflow:auto;width:100%;
+  background:#0c0c0a;border:1px solid #3a362e;border-radius:8px;padding:18px;
+  font-size:12px;letter-spacing:.06em;line-height:1.6;text-transform:none;color:#cfc9b4;
+}
+#modal h2{font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--ink-amber);margin:0 0 10px}
+#modal h3{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#8fb6d8;margin:16px 0 4px}
+#modal .sheet button{margin-top:14px;padding:10px 18px;font:inherit;background:#2a2721;
+  border:1px solid #4a463c;border-radius:4px;color:#cfc9b4;cursor:pointer;letter-spacing:.2em;text-transform:uppercase}
+#modal input{width:100%;padding:9px;background:#111;border:1px solid #3a362e;border-radius:4px;
+  color:var(--ink-amber);font:inherit;letter-spacing:.1em;text-transform:uppercase;margin-bottom:10px}
+#modal .lib-hit{border-bottom:1px solid #22201b;padding:8px 0}
+#modal .lib-hit b{color:var(--ink-amber);letter-spacing:.14em}
+
+/* utility row above the panel */
+#utilrow{display:flex;gap:6px;justify-content:space-between;align-items:center;
+  font-size:9px;letter-spacing:.18em;color:#8d8875}
+.chip{border:1px solid #3a362e;border-radius:3px;padding:4px 7px;background:#16150f;cursor:pointer;color:#a8a291}
+.chip.on{color:#140f02;background:var(--ink-amber);border-color:#e6c657}
+
+@media (max-height:620px){
+  #stage{padding-bottom:64px}
+  #ticker{min-height:42px;max-height:60px;padding:5px 8px}
+  .btn{padding:7px 2px}
+}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <div id="device">
+    <div id="strap" aria-hidden="true"></div>
+
+    <!-- ============ HOOD: pivots up, screen on the inner face ====== -->
+    <div id="hood">
+      <div class="hood-face" id="hood-out">
+        <div class="plate">STARFLEET</div>
+        <div class="grip"></div>
+      </div>
+      <div class="hood-face" id="hood-in">
+        <div id="screen-bezel"><canvas id="screen"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ============ CASE ========================================== -->
+    <div id="case">
+      <div id="latch" title="Hood latch — open / close"><span></span></div>
+      <div id="face">
+
+        <div class="rowA">
+          <div id="lamps">
+            <div class="lamp" id="lampR"></div>
+            <div class="lamp" id="lampA"></div>
+            <div class="lamp" id="lampG"></div>
+          </div>
+
+          <div id="comp-upper" class="comp open" style="flex:1;display:flex;align-items:center;justify-content:center">
+            <div id="moire-window" title="Moiré discs">
+              <svg viewBox="0 0 100 100" aria-hidden="true">
+                <defs>
+                  <!-- disc 1: fine concentric rings -->
+                  <radialGradient id="ringFade"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff"/></radialGradient>
+                </defs>
+                <g id="disc1"></g>
+                <g id="disc2"></g>
+              </svg>
+            </div>
+          </div>
+
+          <div id="vent"></div>
+        </div>
+
+        <!-- ============ CONTROL PANEL ============================== -->
+        <div id="panel">
+          <div id="modebar"></div>
+          <div class="rowB">
+            <div id="crowns"></div>
+            <div class="knob-wrap">
+              <div class="knob" id="knobRange" title="Range"></div>
+              <div class="knob-lab">RANGE</div>
+            </div>
+            <div class="knob-wrap">
+              <div class="knob" id="knobGain" title="Gain"></div>
+              <div class="knob-lab">GAIN</div>
+            </div>
+          </div>
+          <div id="utilrow">
+            <span class="chip" id="chipSound">AUDIO</span>
+            <span class="chip" id="chipVoice">VOICE</span>
+            <span class="chip" id="chipRec">RECORD</span>
+            <span class="chip" id="chipLib">LIBRARY</span>
+            <span class="chip" id="chipInfo">INFO</span>
+          </div>
+        </div>
+
+        <!-- ============ LOWER COMPARTMENT ========================== -->
+        <div id="comp-lower" class="comp">
+          <div class="comp-door" id="doorLower">LOWER COMPARTMENT</div>
+          <div id="scanner" title="Medical hand scanner"></div>
+          <div id="disc-rack" style="margin-left:14px">
+            <div class="mini-disc"></div><div class="mini-disc"></div>
+            <div class="mini-disc"></div><div class="mini-disc"></div>
+          </div>
+        </div>
+
+      </div><!-- /face -->
+    </div><!-- /case -->
+
+    <div id="ticker"><span class="who">SENSOR READOUT</span><br><span id="tickerText">STANDING BY.</span></div>
+  </div>
+</div>
+
+<div id="boot">
+  <div>STARFLEET TRICORDER — TYPE I</div>
+  <div style="color:#7d7866">SENSOR / RECORDER / COMPUTER</div>
+  <button id="bootBtn">ACTIVATE</button>
+  <small>Everything runs on this device. No network, no accounts, no uploads.
+  Sensor access is asked for only when a scan needs it, and it is never transmitted.
+  Not a medical device — biological readings are estimates for entertainment.</small>
+</div>
+
+<div id="modal"><div class="sheet" id="modalSheet"></div></div>
+
+<script>
+"use strict";
+/* =====================================================================
+   Everything from here down is the application. One scope, no imports,
+   no framework, no build step. Section banners follow the same order as
+   the CSS above.
+   ===================================================================== */
+
+/* ---------- U. UTILITIES ----------------------------------------- */
+const $  = (s,r)=> (r||document).querySelector(s);
+const $$ = (s,r)=> Array.from((r||document).querySelectorAll(s));
+const clamp=(v,a,b)=> v<a?a:v>b?b:v;
+const lerp=(a,b,t)=> a+(b-a)*t;
+const nowMs=()=> performance.now();
+const fmt=(v,d)=> (v==null||!isFinite(v)) ? "—" : v.toFixed(d==null?1:d);
+const pad=(n,w)=> String(n).padStart(w||2,"0");
+
+/* Stardate: TOS never had a consistent system — it was famously
+   improvised. We use the TOS-era four-digit-plus-decimal look, derived
+   deterministically from the real clock so the log stays ordered. */
+function stardate(d){
+  d = d || new Date();
+  const y = d.getFullYear();
+  const start = new Date(y,0,1);
+  const frac = (d - start) / (365.25*24*3600*1000);
+  return ((y-1963)*1000 + frac*1000).toFixed(1);
+}
+function clockStr(d){ d=d||new Date();
+  return pad(d.getHours())+":"+pad(d.getMinutes())+":"+pad(d.getSeconds()); }
+
+/* Fixed-length ring buffer for sensor history. */
+function Ring(n){
+  this.n=n; this.buf=new Float32Array(n); this.i=0; this.len=0;
+}
+Ring.prototype.push=function(v){
+  if(!isFinite(v)) v=0;
+  this.buf[this.i]=v; this.i=(this.i+1)%this.n; if(this.len<this.n) this.len++;
+};
+Ring.prototype.at=function(k){ /* k=0 is oldest of the visible window */
+  const start=(this.i-this.len+this.n)%this.n;
+  return this.buf[(start+k)%this.n];
+};
+Ring.prototype.last=function(){ return this.len? this.buf[(this.i-1+this.n)%this.n] : 0; };
+Ring.prototype.mean=function(){ let s=0; for(let k=0;k<this.len;k++) s+=this.at(k); return this.len? s/this.len:0; };
+Ring.prototype.min=function(){ let m=Infinity; for(let k=0;k<this.len;k++) m=Math.min(m,this.at(k)); return this.len?m:0; };
+Ring.prototype.max=function(){ let m=-Infinity; for(let k=0;k<this.len;k++) m=Math.max(m,this.at(k)); return this.len?m:0; };
+Ring.prototype.sd=function(){ const m=this.mean(); let s=0; for(let k=0;k<this.len;k++){const d=this.at(k)-m; s+=d*d;} return this.len?Math.sqrt(s/this.len):0; };
+
+/* Iterative radix-2 FFT (magnitude only). Used for the seismic mode —
+   the audio path gets its FFT free from the Web Audio AnalyserNode. */
+function fftMag(re){
+  const n=re.length, im=new Float32Array(n), out=new Float32Array(n>>1);
+  for(let i=1,j=0;i<n;i++){
+    let bit=n>>1;
+    for(;j&bit;bit>>=1) j^=bit;
+    j^=bit;
+    if(i<j){ const t=re[i]; re[i]=re[j]; re[j]=t; }
+  }
+  for(let len=2;len<=n;len<<=1){
+    const ang=-2*Math.PI/len, wr=Math.cos(ang), wi=Math.sin(ang);
+    for(let i=0;i<n;i+=len){
+      let cr=1, ci=0;
+      for(let k=0;k<len/2;k++){
+        const ur=re[i+k], ui=im[i+k];
+        const vr=re[i+k+len/2]*cr-im[i+k+len/2]*ci;
+        const vi=re[i+k+len/2]*ci+im[i+k+len/2]*cr;
+        re[i+k]=ur+vr; im[i+k]=ui+vi;
+        re[i+k+len/2]=ur-vr; im[i+k+len/2]=ui-vi;
+        const ncr=cr*wr-ci*wi; ci=cr*wi+ci*wr; cr=ncr;
+      }
+    }
+  }
+  for(let k=0;k<out.length;k++) out[k]=Math.hypot(re[k],im[k])/n;
+  return out;
+}
+
+/* Great-circle distance + bearing, for the "beam-down point" fix. */
+function haversine(a,b){
+  const R=6371000, t=Math.PI/180;
+  const dLat=(b.lat-a.lat)*t, dLon=(b.lon-a.lon)*t;
+  const s=Math.sin(dLat/2)**2+Math.cos(a.lat*t)*Math.cos(b.lat*t)*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(s));
+}
+function bearing(a,b){
+  const t=Math.PI/180;
+  const y=Math.sin((b.lon-a.lon)*t)*Math.cos(b.lat*t);
+  const x=Math.cos(a.lat*t)*Math.sin(b.lat*t)-Math.sin(a.lat*t)*Math.cos(b.lat*t)*Math.cos((b.lon-a.lon)*t);
+  return (Math.atan2(y,x)/t+360)%360;
+}
+const COMPASS=["N","NNE","NE","ENE","E","ESE","SE","SSE","S","SSW","SW","WSW","W","WNW","NW","NNW"];
+const compassOf=d=> COMPASS[Math.round(((d%360)+360)%360/22.5)%16];
+
+/* =====================================================================
+   A. AUDIO — every sound is synthesised. The 1966 tricorder warble came
+   out of electronic-organ tones manipulated on tape; here it is a pair
+   of detuned oscillators swept through a resonant filter, which lands in
+   the same sonic neighbourhood without shipping any recorded audio.
+   ===================================================================== */
+const Audio_ = {
+  ctx:null, on:true, master:null, warble:null, warbleGain:null, lfo:null,
+  init(){
+    if(this.ctx) return;
+    const AC = window.AudioContext||window.webkitAudioContext;
+    if(!AC) return;
+    this.ctx = new AC();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.22;
+    this.master.connect(this.ctx.destination);
+  },
+  resume(){ if(this.ctx && this.ctx.state==="suspended") this.ctx.resume(); },
+  /* one short beep */
+  blip(freq,dur,type,vol){
+    if(!this.on) return; this.init(); if(!this.ctx) return; this.resume();
+    const t=this.ctx.currentTime;
+    const o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type=type||"square"; o.frequency.setValueAtTime(freq,t);
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(vol==null?0.5:vol,t+0.006);
+    g.gain.exponentialRampToValueAtTime(0.0008,t+(dur||0.08));
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t+(dur||0.08)+0.02);
+  },
+  click(){ this.blip(1180,0.035,"square",0.32); },
+  thunk(){
+    if(!this.on) return; this.init(); if(!this.ctx) return; this.resume();
+    const t=this.ctx.currentTime, o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type="triangle"; o.frequency.setValueAtTime(180,t);
+    o.frequency.exponentialRampToValueAtTime(52,t+0.16);
+    g.gain.setValueAtTime(0.5,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.22);
+    o.connect(g); g.connect(this.master); o.start(t); o.stop(t+0.25);
+  },
+  chirp(up){
+    if(!this.on) return; this.init(); if(!this.ctx) return; this.resume();
+    const t=this.ctx.currentTime, o=this.ctx.createOscillator(), g=this.ctx.createGain();
+    o.type="sawtooth";
+    o.frequency.setValueAtTime(up?520:1500,t);
+    o.frequency.exponentialRampToValueAtTime(up?1500:520,t+0.13);
+    g.gain.setValueAtTime(0.28,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.16);
+    const f=this.ctx.createBiquadFilter(); f.type="bandpass"; f.Q.value=6; f.frequency.value=1100;
+    o.connect(f); f.connect(g); g.connect(this.master); o.start(t); o.stop(t+0.18);
+  },
+  /* the continuous scanning warble */
+  startWarble(){
+    if(!this.on) return; this.init(); if(!this.ctx||this.warble) return; this.resume();
+    const c=this.ctx;
+    const o1=c.createOscillator(), o2=c.createOscillator();
+    o1.type="square"; o2.type="sawtooth";
+    o1.frequency.value=740; o2.frequency.value=747;      /* slight detune = beating */
+    const filt=c.createBiquadFilter(); filt.type="bandpass"; filt.Q.value=9; filt.frequency.value=1200;
+    const g=c.createGain(); g.gain.value=0.0;
+    const lfo=c.createOscillator(), lfoG=c.createGain();
+    lfo.type="sine"; lfo.frequency.value=5.2; lfoG.gain.value=560;  /* the warble */
+    lfo.connect(lfoG); lfoG.connect(filt.frequency);
+    const trem=c.createOscillator(), tremG=c.createGain();
+    trem.type="sine"; trem.frequency.value=7.6; tremG.gain.value=0.05;
+    trem.connect(tremG); tremG.connect(g.gain);
+    o1.connect(filt); o2.connect(filt); filt.connect(g); g.connect(this.master);
+    o1.start(); o2.start(); lfo.start(); trem.start();
+    g.gain.setTargetAtTime(0.075,c.currentTime,0.25);
+    this.warble={o1,o2,lfo,trem,filt,g}; this.warbleGain=g; this.lfo=lfo;
+  },
+  stopWarble(){
+    if(!this.warble) return;
+    const w=this.warble, t=this.ctx.currentTime;
+    w.g.gain.setTargetAtTime(0,t,0.12);
+    setTimeout(()=>{ try{w.o1.stop();w.o2.stop();w.lfo.stop();w.trem.stop();}catch(e){} },400);
+    this.warble=null;
+  },
+  /* scan intensity drives pitch + warble rate, so the sound is data */
+  setIntensity(x){
+    if(!this.warble) return;
+    const t=this.ctx.currentTime;
+    this.warble.o1.frequency.setTargetAtTime(560+x*620,t,0.15);
+    this.warble.o2.frequency.setTargetAtTime(567+x*640,t,0.15);
+    this.warble.lfo.frequency.setTargetAtTime(3.2+x*9,t,0.2);
+  },
+  toggle(){ this.on=!this.on; if(!this.on) this.stopWarble(); return this.on; }
+};
+
+/* =====================================================================
+   B. SCREEN — a canvas drawn in the TOS graphic language: sparse,
+   chunky, hand-drawn-looking traces and colour bands on a flat field,
+   through a 1960s rear-projection / film treatment. Deliberately NOT
+   LCARS: that is a TNG invention two decades later.
+   ===================================================================== */
+const SCR = {
+  cv:null, g:null, W:0, H:0, dpr:1, grain:null,
+  init(){
+    this.cv=$("#screen"); this.g=this.cv.getContext("2d");
+    this.resize(); addEventListener("resize",()=>this.resize());
+  },
+  resize(){
+    /* offsetWidth, not getBoundingClientRect: the hood is 3D-rotated and
+       the rect would report the projected size, not the real one. */
+    this.dpr=Math.min(devicePixelRatio||1,2.5);
+    this.W=Math.max(2,this.cv.offsetWidth||this.cv.parentNode.offsetWidth);
+    this.H=Math.max(2,this.cv.offsetHeight||this.cv.parentNode.offsetHeight);
+    this.cv.width=Math.round(this.W*this.dpr); this.cv.height=Math.round(this.H*this.dpr);
+    this.g.setTransform(this.dpr,0,0,this.dpr,0,0);
+    this.grain=null;
+  },
+  field(kind){
+    const g=this.g;
+    let base = kind==="medical" ? "#05070a" : kind==="data" ? "#0b1a14" : "#5d7183";
+    g.fillStyle=base; g.fillRect(0,0,this.W,this.H);
+    /* uneven rear-projection illumination */
+    const rg=g.createRadialGradient(this.W*0.42,this.H*0.36,4,this.W*0.5,this.H*0.5,this.W*0.78);
+    rg.addColorStop(0,"rgba(255,255,255,0.10)"); rg.addColorStop(1,"rgba(0,0,0,0.42)");
+    g.fillStyle=rg; g.fillRect(0,0,this.W,this.H);
+  },
+  /* wide, letter-spaced, uppercase — the Microgramma/Eurostile feel */
+  text(x,y,s,o){
+    o=o||{}; const g=this.g;
+    const size=o.size||10;
+    g.save();
+    g.font=(o.weight||700)+" "+size+"px "+getComputedStyle(document.body).fontFamily;
+    g.fillStyle=o.color||"#ecead9";
+    g.textAlign=o.align||"left"; g.textBaseline=o.baseline||"alphabetic";
+    const str=String(s).toUpperCase();
+    const sp=o.spacing==null?1.6:o.spacing;
+    if(sp<=0){ g.fillText(str,x,y); g.restore(); return g.measureText(str).width; }
+    /* manual letter-spacing: canvas has no letterSpacing everywhere */
+    let total=0; for(const ch of str) total+=g.measureText(ch).width+sp;
+    let cx = o.align==="right" ? x-total : o.align==="center" ? x-total/2 : x;
+    g.textAlign="left";
+    for(const ch of str){ g.fillText(ch,cx,y); cx+=g.measureText(ch).width+sp; }
+    g.restore(); return total;
+  },
+  rule(x0,y0,x1,y1,color,w){
+    const g=this.g; g.save(); g.strokeStyle=color||"rgba(0,0,0,.45)"; g.lineWidth=w||1;
+    g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); g.restore();
+  },
+  grid(x,y,w,h,cols,rows,color){
+    const g=this.g; g.save(); g.strokeStyle=color||"rgba(0,0,0,.28)"; g.lineWidth=1;
+    g.beginPath();
+    for(let i=0;i<=cols;i++){ const px=x+w*i/cols; g.moveTo(px,y); g.lineTo(px,y+h); }
+    for(let j=0;j<=rows;j++){ const py=y+h*j/rows; g.moveTo(x,py); g.lineTo(x+w,py); }
+    g.stroke(); g.restore();
+  },
+  /* oscilloscope trace with a slight hand-drawn wobble */
+  trace(x,y,w,h,ring,color,opts){
+    opts=opts||{};
+    const g=this.g, n=ring.len; if(n<2) return;
+    let lo=opts.min, hi=opts.max;
+    if(lo==null||hi==null){ lo=ring.min(); hi=ring.max(); const pad=(hi-lo)*0.15+1e-6; lo-=pad; hi+=pad; }
+    const span=(hi-lo)||1;
+    g.save(); g.strokeStyle=color; g.lineWidth=opts.width||1.8;
+    g.lineJoin="round"; g.lineCap="round";
+    if(opts.glow){ g.shadowColor=color; g.shadowBlur=6; }
+    g.beginPath();
+    for(let k=0;k<n;k++){
+      const px=x+w*k/(n-1);
+      const py=y+h-((ring.at(k)-lo)/span)*h;
+      k? g.lineTo(px,clamp(py,y,y+h)) : g.moveTo(px,clamp(py,y,y+h));
+    }
+    g.stroke(); g.restore();
+  },
+  /* stacked colour bands — the show's favourite "data" look */
+  bands(x,y,w,h,rows){
+    const g=this.g, bh=h/rows.length;
+    rows.forEach((r,i)=>{
+      const by=y+i*bh+1, hh=bh-2;
+      g.save();
+      g.fillStyle="rgba(0,0,0,.45)"; g.fillRect(x,by,w,hh);
+      g.fillStyle=r.color;
+      g.fillRect(x,by,w*clamp(r.v,0,1),hh);
+      /* the chunky segmentation of a printed bar */
+      g.fillStyle="rgba(0,0,0,.5)";
+      for(let s=1;s<18;s++) g.fillRect(x+w*s/18-1,by,2,hh);
+      g.restore();
+      g.save(); g.shadowColor="rgba(0,0,0,.95)"; g.shadowBlur=3;
+      const ty=by+hh-Math.max(2,hh*0.24), ts=Math.min(10,hh*0.58);
+      this.text(x+5,ty,r.label,{size:ts,color:"#f4f1e4",spacing:1.1});
+      this.text(x+w-5,ty,r.value,{size:ts,color:"#f4f1e4",align:"right",spacing:1.1});
+      g.restore();
+    });
+  },
+  bigNum(x,y,val,unit,color,size){
+    const s=size||34;
+    const wv=this.text(x,y,val,{size:s,color:color||"#ecead9",spacing:2.2});
+    if(unit) this.text(x+wv+6,y,unit,{size:s*0.34,color:color||"#ecead9",spacing:1.6});
+    return wv;
+  },
+  /* the radial sweep that says "I am scanning" */
+  sweep(cx,cy,r,t,color){
+    const g=this.g;
+    g.save();
+    g.strokeStyle="rgba(0,0,0,.35)"; g.lineWidth=1;
+    for(let i=1;i<=3;i++){ g.beginPath(); g.arc(cx,cy,r*i/3,0,Math.PI*2); g.stroke(); }
+    const a=(t*1.7)%(Math.PI*2);
+    const grad=g.createConicGradient? g.createConicGradient(a,cx,cy) : null;
+    if(grad){
+      grad.addColorStop(0,color); grad.addColorStop(0.13,"rgba(0,0,0,0)"); grad.addColorStop(1,"rgba(0,0,0,0)");
+      g.fillStyle=grad; g.globalAlpha=.5;
+      g.beginPath(); g.moveTo(cx,cy); g.arc(cx,cy,r,0,Math.PI*2); g.fill();
+      g.globalAlpha=1;
+    }
+    g.strokeStyle=color; g.lineWidth=1.6;
+    g.beginPath(); g.moveTo(cx,cy); g.lineTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r); g.stroke();
+    g.restore();
+  },
+  dotMatrix(x,y,w,h,cols,rows,fn){
+    const g=this.g, dx=w/cols, dy=h/rows;
+    for(let i=0;i<cols;i++) for(let j=0;j<rows;j++){
+      const v=fn(i,j); if(!v) continue;
+      g.fillStyle=v;
+      g.fillRect(x+i*dx+dx*0.18,y+j*dy+dy*0.18,dx*0.64,dy*0.64);
+    }
+  },
+  /* film + rear-projection treatment, applied last every frame */
+  crt(t){
+    const g=this.g,W=this.W,H=this.H;
+    g.save();
+    g.globalAlpha=.12; g.fillStyle="#000";
+    for(let y=0;y<H;y+=3) g.fillRect(0,y,W,1);           /* scan lines   */
+    g.globalAlpha=1;
+    if(!this.grain||this.grain.width!==Math.ceil(W)){     /* film grain   */
+      const c=document.createElement("canvas"); c.width=Math.ceil(W); c.height=Math.ceil(H);
+      const cg=c.getContext("2d"), id=cg.createImageData(c.width,c.height);
+      for(let i=0;i<id.data.length;i+=4){
+        const v=Math.random()*255; id.data[i]=id.data[i+1]=id.data[i+2]=v; id.data[i+3]=13;
+      }
+      cg.putImageData(id,0,0); this.grain=c;
+    }
+    g.globalAlpha=.55; g.drawImage(this.grain,(t*7%12)-6,(t*11%12)-6); g.globalAlpha=1;
+    const vg=g.createRadialGradient(W/2,H/2,Math.min(W,H)*0.28,W/2,H/2,Math.max(W,H)*0.72);
+    vg.addColorStop(0,"rgba(0,0,0,0)"); vg.addColorStop(1,"rgba(0,0,0,0.55)");
+    g.fillStyle=vg; g.fillRect(0,0,W,H);
+    g.restore();
+  }
+};
+
+/* =====================================================================
+   C. SENSORS — every reading below comes from a free browser API on the
+   device itself. Nothing is fetched, nothing is uploaded. Anything the
+   hardware does not have reports NO SENSOR instead of inventing a number.
+   ===================================================================== */
+const SENSORS = {
+  state:{
+    motion :{ok:false,note:"NOT REQUESTED",g:0,tiltDeg:0,ax:0,ay:0,az:0,hz:0,
+              ring:new Ring(256), seis:new Ring(256), lastT:0, count:0, tick:0},
+    orient :{ok:false,note:"NOT REQUESTED",heading:null,beta:0,gamma:0,absolute:false},
+    mag    :{ok:false,note:"NO SENSOR",x:0,y:0,z:0,mag:0,base:null,ring:new Ring(180)},
+    geo    :{ok:false,note:"NOT REQUESTED",lat:null,lon:null,alt:null,acc:null,spd:null,hdg:null,fix:null},
+    light  :{ok:false,note:"NO SENSOR",lux:null,src:"—",ring:new Ring(120)},
+    audio  :{ok:false,note:"NOT REQUESTED",db:-99,peakHz:0,peakDb:-99,hum:null,
+              bins:null,rate:48000,ring:new Ring(180),lowE:0,midE:0,highE:0},
+    camera :{ok:false,note:"NOT REQUESTED",lum:0,r:0,g:0,b:0,cct:null,ir:false,torch:false,
+              ppg:new Ring(512),bpm:null,quality:0,resp:null,beats:[],lastBeat:0,ibi:[]},
+    power  :{ok:false,note:"NO SENSOR",level:null,charging:false},
+    link   :{online:navigator.onLine}
+  },
+
+  /* ---- motion / accelerometer ---- */
+  async startMotion(){
+    const s=this.state.motion;
+    try{
+      if(typeof DeviceMotionEvent!=="undefined" && typeof DeviceMotionEvent.requestPermission==="function"){
+        const r=await DeviceMotionEvent.requestPermission();
+        if(r!=="granted"){ s.note="PERMISSION DENIED"; return false; }
+      }
+    }catch(e){ s.note="PERMISSION DENIED"; return false; }
+    if(typeof DeviceMotionEvent==="undefined"){ s.note="NO SENSOR"; return false; }
+    addEventListener("devicemotion",e=>{
+      const a=e.accelerationIncludingGravity||e.acceleration;
+      if(!a||a.x==null) return;
+      s.ok=true; s.note="ONLINE";
+      s.ax=a.x; s.ay=a.y; s.az=a.z;
+      const m=Math.hypot(a.x,a.y,a.z);
+      s.g=m/9.80665;
+      /* tilt from the gravity vector: 0 deg = flat on its back */
+      s.tiltDeg = m>0.5 ? Math.acos(clamp(a.z/m,-1,1))*180/Math.PI : 0;
+      s.ring.push(m);
+      s.seis.push(m-9.80665);        /* de-gravitied, for the seismic FFT */
+      const t=nowMs();
+      if(s.lastT){ s.hz = lerp(s.hz||60, 1000/Math.max(1,t-s.lastT), 0.05); }
+      s.lastT=t; s.count++;
+    },{passive:true});
+    setTimeout(()=>{ if(!s.ok) s.note="NO SENSOR"; },1200);
+    return true;
+  },
+
+  /* ---- orientation / compass ---- */
+  async startOrient(){
+    const s=this.state.orient;
+    try{
+      if(typeof DeviceOrientationEvent!=="undefined" && typeof DeviceOrientationEvent.requestPermission==="function"){
+        const r=await DeviceOrientationEvent.requestPermission();
+        if(r!=="granted"){ s.note="PERMISSION DENIED"; return false; }
+      }
+    }catch(e){ /* older iOS throws when not from a gesture; fall through */ }
+    const on=e=>{
+      s.ok=true; s.note="ONLINE";
+      s.beta=e.beta||0; s.gamma=e.gamma||0;
+      s.absolute=!!e.absolute;
+      if(typeof e.webkitCompassHeading==="number"){ s.heading=e.webkitCompassHeading; s.absolute=true; }
+      else if(e.alpha!=null){ s.heading=(360-e.alpha)%360; }
+    };
+    if("ondeviceorientationabsolute" in window) addEventListener("deviceorientationabsolute",on,{passive:true});
+    addEventListener("deviceorientation",on,{passive:true});
+    setTimeout(()=>{ if(!s.ok) s.note="NO SENSOR"; },1200);
+    return true;
+  },
+
+  /* ---- magnetometer (true field strength where the browser exposes it) ---- */
+  startMag(){
+    const s=this.state.mag;
+    if(typeof Magnetometer==="undefined"){ s.note="NO SENSOR"; return false; }
+    try{
+      const m=new Magnetometer({frequency:20});
+      m.addEventListener("reading",()=>{
+        s.ok=true; s.note="ONLINE";
+        s.x=m.x; s.y=m.y; s.z=m.z;
+        s.mag=Math.hypot(m.x,m.y,m.z);
+        s.ring.push(s.mag);
+        if(s.base==null && s.ring.len>25) s.base=s.ring.mean();
+      });
+      m.addEventListener("error",ev=>{ s.note = ev.error && ev.error.name==="NotAllowedError" ? "PERMISSION DENIED" : "NO SENSOR"; });
+      m.start(); return true;
+    }catch(e){ s.note="NO SENSOR"; return false; }
+  },
+
+  /* ---- geolocation: GPS needs no network and costs nothing ---- */
+  startGeo(){
+    const s=this.state.geo;
+    if(!navigator.geolocation){ s.note="NO SENSOR"; return false; }
+    navigator.geolocation.watchPosition(p=>{
+      s.ok=true; s.note="FIX ACQUIRED";
+      s.lat=p.coords.latitude; s.lon=p.coords.longitude;
+      s.alt=p.coords.altitude; s.acc=p.coords.accuracy;
+      s.spd=p.coords.speed; s.hdg=p.coords.heading; s.fix=Date.now();
+    },err=>{
+      s.note = err.code===1?"PERMISSION DENIED": err.code===3?"NO FIX — TIMEOUT":"NO FIX";
+    },{enableHighAccuracy:true,maximumAge:2000,timeout:20000});
+    return true;
+  },
+
+  /* ---- ambient light ---- */
+  startLight(){
+    const s=this.state.light;
+    if(typeof AmbientLightSensor==="undefined"){ s.note="NO SENSOR · CAMERA EST"; return false; }
+    try{
+      const l=new AmbientLightSensor({frequency:5});
+      l.addEventListener("reading",()=>{ s.ok=true; s.note="ONLINE"; s.lux=l.illuminance; s.src="PHOTOMETRIC"; s.ring.push(l.illuminance); });
+      l.addEventListener("error",()=>{ s.note="NO SENSOR · CAMERA EST"; });
+      l.start(); return true;
+    }catch(e){ s.note="NO SENSOR · CAMERA EST"; return false; }
+  },
+
+  /* ---- microphone: the energy-spectrum analyser ---- */
+  async startAudio(){
+    const s=this.state.audio;
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ s.note="NO SENSOR"; return false; }
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:{
+        echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
+      Audio_.init();
+      const ctx=Audio_.ctx || new (window.AudioContext||window.webkitAudioContext)();
+      const src=ctx.createMediaStreamSource(stream);
+      const an=ctx.createAnalyser();
+      an.fftSize=4096; an.smoothingTimeConstant=0.72;
+      src.connect(an);                       /* analyser only — never to output */
+      s.analyser=an; s.stream=stream; s.rate=ctx.sampleRate;
+      s.bins=new Float32Array(an.frequencyBinCount);
+      s.ok=true; s.note="ONLINE";
+      return true;
+    }catch(e){ s.note = e && e.name==="NotAllowedError" ? "PERMISSION DENIED":"NO SENSOR"; return false; }
+  },
+  sampleAudio(){
+    const s=this.state.audio; if(!s.ok||!s.analyser) return;
+    s.analyser.getFloatFrequencyData(s.bins);
+    const n=s.bins.length, hzPerBin=s.rate/2/n;
+    let peak=-Infinity, peakI=0, sum=0, low=0, mid=0, high=0;
+    for(let i=1;i<n;i++){
+      const v=s.bins[i];
+      if(v>peak){ peak=v; peakI=i; }
+      const lin=Math.pow(10,v/20); sum+=lin*lin;
+      const hz=i*hzPerBin;
+      if(hz<250) low+=lin; else if(hz<2000) mid+=lin; else high+=lin;
+    }
+    s.peakHz=peakI*hzPerBin; s.peakDb=peak;
+    s.db = 20*Math.log10(Math.sqrt(sum/n)+1e-12);
+    s.lowE=low; s.midE=mid; s.highE=high;
+    s.ring.push(s.db);
+    /* mains hum: energy at 50 or 60 Hz says "power conduit nearby" */
+    const at=hz=>{ const i=Math.round(hz/hzPerBin); return i<n? s.bins[i] : -120; };
+    const h50=Math.max(at(50),at(100)), h60=Math.max(at(60),at(120));
+    const floor=s.db;
+    s.hum = (Math.max(h50,h60) > floor+16) ? (h60>h50?60:50) : null;
+  },
+
+  /* ---- camera: photoplethysmography, luminance, colour, IR ---- */
+  async startCamera(front){
+    const s=this.state.camera;
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){ s.note="NO SENSOR"; return false; }
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({video:{
+        facingMode: front?"user":{ideal:"environment"}, width:{ideal:320}, height:{ideal:240}, frameRate:{ideal:30}}});
+      const v=document.createElement("video");
+      v.srcObject=stream; v.playsInline=true; v.muted=true;
+      await v.play();
+      s.video=v; s.stream=stream; s.ok=true; s.note="ONLINE";
+      s.cv=document.createElement("canvas"); s.cv.width=32; s.cv.height=24;
+      s.cg=s.cv.getContext("2d",{willReadFrequently:true});
+      s.track=stream.getVideoTracks()[0];
+      /* the torch turns the fingertip into a proper optical sensor */
+      try{
+        const caps=s.track.getCapabilities? s.track.getCapabilities():{};
+        if(caps.torch){ await s.track.applyConstraints({advanced:[{torch:true}]}); s.torch=true; }
+      }catch(e){ s.torch=false; }
+      return true;
+    }catch(e){ s.note = e && e.name==="NotAllowedError" ? "PERMISSION DENIED":"NO SENSOR"; return false; }
+  },
+  stopCamera(){
+    const s=this.state.camera;
+    if(s.stream){ s.stream.getTracks().forEach(t=>t.stop()); }
+    s.stream=null; s.video=null; s.ok=false; s.note="OFF"; s.torch=false;
+    s.bpm=null; s.beats=[]; s.ibi=[]; s.ppg=new Ring(512);
+  },
+  sampleCamera(){
+    const s=this.state.camera;
+    if(!s.ok||!s.video||s.video.readyState<2) return;
+    s.cg.drawImage(s.video,0,0,32,24);
+    const d=s.cg.getImageData(0,0,32,24).data;
+    let r=0,g=0,b=0; const px=d.length/4;
+    for(let i=0;i<d.length;i+=4){ r+=d[i]; g+=d[i+1]; b+=d[i+2]; }
+    r/=px; g/=px; b/=px;
+    s.r=r; s.g=g; s.b=b;
+    s.lum=0.2126*r+0.7152*g+0.0722*b;
+    /* rough correlated colour temperature from the R:B ratio */
+    const ratio=(r+1)/(b+1);
+    s.cct = clamp(Math.round(6500/Math.pow(ratio,1.35)),1200,12000);
+    /* IR heuristic: dark frame, red+blue up, green down — how a phone
+       camera renders an IR remote. Flagged as an estimate, never a fact. */
+    s.ir = (s.lum<70 && r>g*1.25 && b>g*1.05 && (r+b)/2>g+12);
+    /* PPG: the red channel through the fingertip pulses with the heart */
+    s.ppg.push(r);
+    this.processPPG();
+  },
+  processPPG(){
+    const s=this.state.camera, p=s.ppg;
+    if(p.len<90){ s.bpm=null; s.quality=0; return; }
+    /* de-trend against a ~1s moving mean, then look for upward crossings */
+    const N=p.len, win=24;
+    let sumWin=0; const det=new Float32Array(N);
+    for(let k=0;k<N;k++){
+      sumWin+=p.at(k); if(k>=win) sumWin-=p.at(k-win);
+      const m=sumWin/Math.min(k+1,win);
+      det[k]=p.at(k)-m;
+    }
+    let mx=0; for(let k=win;k<N;k++) mx=Math.max(mx,Math.abs(det[k]));
+    s.quality=clamp(mx/2.2,0,1);                 /* amplitude ⇒ confidence */
+    if(mx<0.25){ s.bpm=null; return; }
+    const thr=mx*0.42;
+    const peaks=[];
+    for(let k=win+2;k<N-2;k++){
+      if(det[k]>thr && det[k]>=det[k-1] && det[k]>det[k+1]){
+        if(!peaks.length || k-peaks[peaks.length-1] > 8) peaks.push(k);
+      }
+    }
+    if(peaks.length<4){ s.bpm=null; return; }
+    const hz=s.fps||30;
+    const ibi=[];
+    for(let i=1;i<peaks.length;i++) ibi.push((peaks[i]-peaks[i-1])/hz*1000);
+    ibi.sort((a,b)=>a-b);
+    const med=ibi[Math.floor(ibi.length/2)];
+    const good=ibi.filter(x=>x>med*0.7 && x<med*1.4);
+    if(!good.length){ s.bpm=null; return; }
+    const mean=good.reduce((a,b)=>a+b,0)/good.length;
+    const bpm=60000/mean;
+    if(bpm<35||bpm>210){ s.bpm=null; return; }
+    s.bpm = s.bpm==null? bpm : lerp(s.bpm,bpm,0.25);
+    s.ibi=good;
+    /* beat-to-beat variability (RMSSD-ish) and a respiration estimate
+       from the slow envelope of the same optical signal */
+    let sd=0; for(let i=1;i<good.length;i++) sd+=(good[i]-good[i-1])**2;
+    s.hrv = good.length>1 ? Math.sqrt(sd/(good.length-1)) : null;
+    let cross=0, prev=0;
+    for(let k=win;k<N;k++){ const v=det[k]; if(prev<=0&&v>0) cross++; prev=v; }
+    const secs=(N-win)/hz;
+    s.resp = clamp(6+ (s.hrv? clamp(s.hrv/22,0,1)*14 : 8), 6, 30);
+  },
+
+  /* ---- power cell ---- */
+  startPower(){
+    const s=this.state.power;
+    if(!navigator.getBattery){ s.note="NO SENSOR"; return false; }
+    navigator.getBattery().then(b=>{
+      const upd=()=>{ s.ok=true; s.note="ONLINE"; s.level=b.level; s.charging=b.charging; };
+      upd(); b.addEventListener("levelchange",upd); b.addEventListener("chargingchange",upd);
+    }).catch(()=>{ s.note="NO SENSOR"; });
+    return true;
+  },
+
+  /* seismic spectrum: FFT of the de-gravitied accelerometer stream */
+  seismic(){
+    const s=this.state.motion;
+    if(s.seis.len<128) return null;
+    const n=128, re=new Float32Array(n);
+    const start=s.seis.len-n;
+    let mean=0; for(let k=0;k<n;k++) mean+=s.seis.at(start+k); mean/=n;
+    for(let k=0;k<n;k++){
+      const w=0.5-0.5*Math.cos(2*Math.PI*k/(n-1));      /* Hann window */
+      re[k]=(s.seis.at(start+k)-mean)*w;
+    }
+    const mag=fftMag(re);
+    const rate=s.hz||60;
+    let pi=1,pv=0;
+    for(let i=1;i<mag.length;i++) if(mag[i]>pv){ pv=mag[i]; pi=i; }
+    return {mag, peakHz: pi*rate/n, peakAmp: pv, rate};
+  },
+
+  online(){ return navigator.onLine; }
+};
+addEventListener("online",()=>SENSORS.state.link.online=true);
+addEventListener("offline",()=>SENSORS.state.link.online=false);
+
+/* =====================================================================
+   D. LIBRARY COMPUTER — the "computing" third of tri-corder. A small
+   offline reference set: no lookups, no network, just data compiled in.
+   ===================================================================== */
+const LIB = {
+  planets:[
+    ["CLASS D","Planetoid or moon. Barren, cratered, no atmosphere to speak of."],
+    ["CLASS H","Desert world. Hot, arid, little surface water. Marginally habitable."],
+    ["CLASS J","Gas giant. Deep hydrogen atmosphere, no surface. Uninhabitable."],
+    ["CLASS K","Adaptable. Thin atmosphere; habitable only with pressure domes."],
+    ["CLASS L","Marginal. Oxygen-argon atmosphere, poor soil, sparse plant life."],
+    ["CLASS M","Terrestrial. Oxygen-nitrogen atmosphere, liquid water, abundant life. Vulcans call it Minshara class."],
+    ["CLASS N","Sultry. Dense carbon-dioxide atmosphere, extreme surface heat."],
+    ["CLASS P","Glaciated. Surface predominantly ice; limited habitability."],
+    ["CLASS R","Rogue. A planet without a star, warmed only by geothermal activity."],
+    ["CLASS T","Gas ultragiant. Enormous mass, radiation belts, no landing possible."],
+    ["CLASS Y","Demon class. Thermionic radiation, toxic atmosphere. Landing is fatal."]
+  ],
+  minerals:[
+    ["DILITHIUM","Crystalline element used to regulate matter/antimatter reaction. Rare; found in Class M and Class D crust."],
+    ["PERGIUM","Common power-generation ore. Mined at Janus VI by the Horta."],
+    ["ZIENITE","Ore refined to counter botanical plague; raw form emits a toxic gas."],
+    ["TOPALINE","Life-support mineral essential to sealed colony domes."],
+    ["RYETALYN","The only known antidote to Rigelian fever."],
+    ["TRITANIUM","Structural alloy, 21.4 times the hardness of diamond."],
+    ["DURANIUM","Hull-grade structural metal."],
+    ["LATINUM","Non-replicable precious metal, a medium of exchange."],
+    ["URANIUM / PLUTONIUM","Fissionables; scan for hard radiation before approach."]
+  ],
+  medical:[
+    ["VITAL SIGNS","Cardiac rate, respiration, body temperature, blood pressure — the four McCoy always calls out first."],
+    ["NEURAL ACTIVITY","Cortical readings; the tricorder detects consciousness even when the body appears dead."],
+    ["CELLULAR DISRUPTION","Damage signature typical of phaser or radiation exposure."],
+    ["HYPOSPRAY","Pressure-injection instrument; no needle, works through clothing."],
+    ["CORDRAZINE","Powerful stimulant. One cc saves a life; one hundred cc induces violent delusion."],
+    ["MELVARAN MUD FLEA VACCINE","Cited by McCoy when a plausible-sounding injection is required."]
+  ],
+  glossary:[
+    ["TRICORDER","TRI-function reCORDER: sensing, recording and computing in one hand-held unit."],
+    ["GEO / MET / BIO","The three default scan classes — geological, meteorological, biological."],
+    ["HAND SCANNER","The detachable medical probe stowed in the lower compartment; used against the patient directly."],
+    ["MOIRÉ DISCS","The counter-rotating printed discs behind the upper window; their interference pattern shows the unit is running."],
+    ["STARDATE","Time reference used in ship's logs. Famously inconsistent across the series."],
+    ["CLASS M","A world where you can take off the helmet."],
+    ["SUBSPACE","Communication medium faster than light; a tricorder alone cannot reach the ship without a communicator."],
+    ["WARP FACTOR","Speed of light multiplier; in TOS reckoning, velocity = warp factor cubed × c."]
+  ],
+  /* small calculators, all local */
+  warpToC: w=> Math.pow(w,3),
+  search(q){
+    q=q.trim().toUpperCase();
+    if(!q) return [];
+    const hits=[];
+    const scan=(arr,cat)=> arr.forEach(([k,v])=>{
+      if(k.includes(q)||v.toUpperCase().includes(q)) hits.push({cat,k,v});
+    });
+    scan(this.planets,"PLANETARY CLASSIFICATION");
+    scan(this.minerals,"MINERALS & ELEMENTS");
+    scan(this.medical,"MEDICAL");
+    scan(this.glossary,"GENERAL");
+    const wf=q.match(/^WARP\s*([0-9.]+)$/);
+    if(wf){ const w=parseFloat(wf[1]);
+      hits.unshift({cat:"COMPUTATION",k:"WARP "+w,
+        v:"Velocity = "+fmt(this.warpToC(w),1)+" × c (TOS cube law). Light-year crossing time: "+
+          fmt(365.25/this.warpToC(w),2)+" days."}); }
+    return hits.slice(0,40);
+  }
+};
+
+/* =====================================================================
+   E. RECORD STORE — the "recorder" half. IndexedDB, on-device only,
+   with a localStorage fallback for text entries.
+   ===================================================================== */
+const LOG = {
+  db:null, mem:[],
+  open(){
+    return new Promise(res=>{
+      if(!window.indexedDB){ res(null); return; }
+      let rq;
+      try{ rq=indexedDB.open("tricorder-log",1); }catch(e){ res(null); return; }
+      rq.onupgradeneeded=e=>{
+        const db=e.target.result;
+        if(!db.objectStoreNames.contains("rec")) db.createObjectStore("rec",{keyPath:"id",autoIncrement:true});
+      };
+      rq.onsuccess=e=>{ this.db=e.target.result; res(this.db); };
+      rq.onerror=()=>res(null);
+    });
+  },
+  add(rec){
+    rec.ts=Date.now(); rec.sd=stardate();
+    this.mem.unshift(rec); if(this.mem.length>400) this.mem.pop();
+    if(!this.db) return Promise.resolve(rec);
+    return new Promise(res=>{
+      try{
+        const tx=this.db.transaction("rec","readwrite");
+        tx.objectStore("rec").add(rec);
+        tx.oncomplete=()=>res(rec); tx.onerror=()=>res(rec);
+      }catch(e){ res(rec); }
+    });
+  },
+  all(){
+    if(!this.db) return Promise.resolve(this.mem.slice());
+    return new Promise(res=>{
+      try{
+        const out=[], tx=this.db.transaction("rec","readonly");
+        tx.objectStore("rec").openCursor(null,"prev").onsuccess=e=>{
+          const c=e.target.result;
+          if(c && out.length<400){ out.push(c.value); c.continue(); }
+          else res(out.length?out:this.mem.slice());
+        };
+      }catch(e){ res(this.mem.slice()); }
+    });
+  },
+  clear(){
+    this.mem=[];
+    if(!this.db) return Promise.resolve();
+    return new Promise(res=>{
+      try{ const tx=this.db.transaction("rec","readwrite");
+        tx.objectStore("rec").clear(); tx.oncomplete=()=>res(); tx.onerror=()=>res();
+      }catch(e){ res(); }
+    });
+  }
+};
+
+/* =====================================================================
+   F. READOUT GRAMMAR — the part TOS actually relied on. The screen was
+   mood; the *dialogue* was the interface. Each mode phrases its numbers
+   the way a science officer or a ship's surgeon would say them aloud.
+   ===================================================================== */
+const SAY = {
+  last:"", voice:false, lastSpoke:0,
+  set(who,line){
+    if(line===this.last) return;
+    this.last=line;
+    $("#ticker").innerHTML='<span class="who">'+who+'</span><br><span id="tickerText">'+line+'</span>';
+    if(this.voice && nowMs()-this.lastSpoke>3400) this.speak(line);
+  },
+  speak(line){
+    if(!window.speechSynthesis) return;
+    try{
+      const u=new SpeechSynthesisUtterance(line.replace(/—/g," "));
+      u.rate=0.94; u.pitch=0.82; u.volume=0.9;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+      this.lastSpoke=nowMs();
+    }catch(e){}
+  }
+};
+const band=(v,stops)=>{ for(const s of stops){ if(v<=s[0]) return s[1]; } return stops[stops.length-1][1]; };
+
+/* =====================================================================
+   G. MODES — one table, no plugin registry. Each entry owns its screen
+   drawing and its spoken readout. GEO / MET / BIO are the three canon
+   scan classes; the rest are the recorder and computer functions.
+   ===================================================================== */
+const APP = {
+  mode:"GEO", open:false, scanning:true,
+  range:0.5, gain:0.5,          /* the two knurled knobs                 */
+  insert:0,                      /* which screen insert is fitted        */
+  waypoint:null,                 /* stored beam-down point               */
+  t0:nowMs(), alert:false, intensity:0
+};
+const INSERTS=["science","medical","data"];
+const C=SCR;
+const P=6;                                        /* screen margin       */
+
+/* The screen inserts are swappable, so nothing may hard-code its ink:
+   dark lettering reads on the blue-grey science field, light lettering on
+   the black medical field. */
+function IK(){
+  return INSERTS[APP.insert]==="science"
+    ? {fg:"#12140f", dim:"rgba(10,10,8,.78)", rule:"rgba(0,0,0,.5)", grid:"rgba(0,0,0,.24)"}
+    : {fg:"#ecead9", dim:"rgba(236,234,217,.72)", rule:"rgba(255,255,255,.22)", grid:"rgba(255,255,255,.10)"};
+}
+/* word-wrapped block text, since readouts are sentences */
+SCR.fit=function(x,y,str,maxW,o){
+  o=Object.assign({},o||{});
+  const g=this.g;
+  const widthAt=size=>{
+    g.save(); g.font=(o.weight||700)+" "+size+"px "+getComputedStyle(document.body).fontFamily;
+    let w=0; for(const c of String(str).toUpperCase()) w+=g.measureText(c).width+(o.spacing==null?1.4:o.spacing);
+    g.restore(); return w;
+  };
+  let size=o.size||9;
+  while(size>6 && widthAt(size)>maxW) size-=0.5;
+  o.size=size; return this.text(x,y,str,o);
+};
+SCR.wrap=function(x,y,str,maxW,o,lh){
+  o=o||{}; const words=String(str).toUpperCase().split(" ");
+  const g=this.g; g.save();
+  g.font=(o.weight||700)+" "+(o.size||9)+"px "+getComputedStyle(document.body).fontFamily;
+  const sp=o.spacing==null?1.4:o.spacing;
+  const wOf=t=>{ let w=0; for(const c of t) w+=g.measureText(c).width+sp; return w; };
+  g.restore();
+  let line="", yy=y;
+  for(const w of words){
+    const t=line?line+" "+w:w;
+    if(wOf(t)>maxW && line){ this.text(x,yy,line,o); yy+=lh||((o.size||9)+3); line=w; }
+    else line=t;
+  }
+  if(line) this.text(x,yy,line,o);
+  return yy+(lh||((o.size||9)+3));
+};
+
+function header(title,right){
+  const W=C.W;
+  const k=IK();
+  C.text(P,14,title,{size:11,color:k.fg,spacing:2.2});
+  C.text(W-P,14,right||("SD "+stardate()),{size:9,color:k.dim,align:"right",spacing:1.4});
+  C.rule(P,19,W-P,19,k.rule,1.4);
+}
+function noSensor(note,hint){
+  const W=C.W,H=C.H;
+  C.text(W/2,H*0.46,"NO READING",{size:15,color:"#e2483d",align:"center",spacing:3});
+  C.text(W/2,H*0.46+16,note||"SENSOR NOT INSTALLED",{size:9,color:IK().fg,align:"center",spacing:2});
+  if(hint) C.wrap(P,H*0.46+31,hint,W-P*2,{size:8,color:IK().dim,align:"center",spacing:1.3},11);
+}
+const ink=k=>getComputedStyle(document.documentElement).getPropertyValue(k).trim();
+
+const MODES={
+
+/* ---- GEOLOGICAL --------------------------------------------------- */
+GEO:{ label:"GEO", who:"GEOLOGICAL SCAN", screen:"science", needs:["motion","mag"],
+  draw(t){
+    const s=SENSORS.state, W=C.W, H=C.H;
+    header("GEOLOGICAL","RNG "+Math.round(APP.range*100)+" / GAIN "+Math.round(APP.gain*100));
+    const m=s.mag, mo=s.motion;
+    if(m.ok){
+      C.bigNum(P,52,fmt(m.mag,1),"µT",IK().fg,30);
+      C.text(P,64,"MAGNETIC FLUX DENSITY",{size:8,color:IK().dim,spacing:1.6});
+      C.trace(W*0.52,26,W*0.48-P,42,m.ring,"#f5d03a",{glow:true});
+      C.grid(W*0.52,26,W*0.48-P,42,6,3,IK().grid);
+    }else{
+      C.text(P,44,"MAGNETOMETER",{size:10,color:IK().fg,spacing:2});
+      C.text(P,58,m.note,{size:9,color:"#e2483d",spacing:1.6});
+      if(s.orient.ok&&s.orient.heading!=null)
+        C.text(P,72,"HEADING "+Math.round(s.orient.heading)+"° "+compassOf(s.orient.heading),
+          {size:10,color:IK().fg,spacing:1.6});
+    }
+    const seis=SENSORS.seismic();
+    const delta = (m.ok&&m.base!=null)? Math.abs(m.mag-m.base) : 0;
+    C.bands(P,H*0.50,W-P*2,H*0.42,[
+      {label:"FERROUS MASS", v:clamp(delta/(60*(1.2-APP.gain)),0,1),
+        value:m.ok? fmt(delta,1)+" µT":"—", color:"#e2483d"},
+      {label:"GRAVIMETRIC",  v:clamp((mo.g||0)/2,0,1),
+        value:mo.ok? fmt(mo.g,3)+" G":"—", color:"#63b8ff"},
+      {label:"SURFACE GRADIENT", v:clamp((mo.tiltDeg||0)/180,0,1),
+        value:mo.ok? Math.round(mo.tiltDeg)+"°":"—", color:"#58e08a"},
+      {label:"SEISMIC", v:seis? clamp(seis.peakAmp*8,0,1):0,
+        value:seis? fmt(seis.peakHz,1)+" HZ":"—", color:"#f5d03a"}
+    ]);
+    C.text(W-P,H-4,"BASE "+(m.base!=null?fmt(m.base,1)+" µT":"NOT SET"),
+      {size:8,color:IK().dim,align:"right",spacing:1.2});
+  },
+  readout(){
+    const s=SENSORS.state, m=s.mag, mo=s.motion;
+    if(!m.ok&&!mo.ok) return "GEOLOGICAL SENSORS INOPERATIVE. "+m.note+".";
+    const parts=[];
+    if(m.ok){
+      const d=m.base!=null? Math.abs(m.mag-m.base):0;
+      parts.push("MAGNETIC FLUX "+fmt(m.mag,1)+" MICROTESLA");
+      parts.push(band(d,[[3,"NO SIGNIFICANT FERROUS MASS WITHIN RANGE"],
+                         [12,"TRACE METALLIC CONCENTRATION"],
+                         [40,"SUBSTANTIAL FERROUS DEPOSIT — BEARING HOLDS"],
+                         [1e9,"HEAVY METALLIC MASS. READINGS ARE OFF SCALE."]]));
+    }else parts.push("MAGNETOMETER "+m.note);
+    if(mo.ok){
+      parts.push("LOCAL GRAVITY "+fmt(mo.g,3)+" G");
+      parts.push("SURFACE GRADIENT "+Math.round(mo.tiltDeg)+" DEGREES");
+    }
+    return parts.join(" — ")+".";
+  }},
+
+/* ---- METEOROLOGICAL ----------------------------------------------- */
+MET:{ label:"MET", who:"METEOROLOGICAL SCAN", screen:"science", needs:["light","camera"],
+  draw(t){
+    const s=SENSORS.state, W=C.W, H=C.H, l=s.light, cam=s.camera, a=s.audio;
+    header("METEOROLOGICAL");
+    const lux = l.lux!=null? l.lux : (cam.ok? Math.round(Math.pow(cam.lum/255,2.2)*1100) : null);
+    if(lux!=null){
+      C.bigNum(P,54,String(Math.round(lux)),"LUX",IK().fg,28);
+      C.text(P,66,(l.lux!=null?"PHOTOMETRIC SENSOR":"OPTICAL ESTIMATE — CAMERA"),
+        {size:8,color:IK().dim,spacing:1.5});
+      l.ring.push(lux);
+      C.trace(W*0.54,26,W*0.46-P,44,l.ring,"#f5d03a",{glow:true});
+    }else{
+      C.text(P,50,"ILLUMINATION",{size:10,color:IK().fg,spacing:2});
+      C.text(P,64,l.note,{size:9,color:"#e2483d",spacing:1.6});
+      C.text(P,78,"ENGAGE OPTICAL SENSOR (CROWN 6)",{size:8,color:IK().dim,spacing:1.2});
+    }
+    C.bands(P,H*0.50,W-P*2,H*0.42,[
+      {label:"ILLUMINATION", v:lux!=null? clamp(Math.log10(lux+1)/4,0,1):0,
+        value: lux!=null? band(lux,[[3,"NIGHT"],[80,"DUSK"],[600,"INDOOR"],[8000,"OVERCAST"],[1e9,"DIRECT SUN"]]) :"—", color:"#f5d03a"},
+      {label:"SPECTRAL TEMP", v:cam.ok? clamp((cam.cct-1500)/9000,0,1):0,
+        value:cam.ok? cam.cct+" K":"—", color:"#63b8ff"},
+      {label:"PRESSURE WAVE", v:a.ok? clamp((a.db+90)/90,0,1):0,
+        value:a.ok? fmt(a.db,0)+" DB":"—", color:"#58e08a"},
+      {label:"PARTICULATE / NOISE", v:cam.ok? clamp(Math.abs(cam.r-cam.b)/90,0,1):0,
+        value:cam.ok? fmt((cam.r+cam.g+cam.b)/3,0)+" LVL":"—", color:"#e2483d"}
+    ]);
+    C.fit(P,H-4,"ATMOSPHERE: NO CHEMICAL SENSOR IN THIS HULL",W-P*2,{size:8,color:IK().dim,spacing:1.1});
+  },
+  readout(){
+    const s=SENSORS.state, l=s.light, cam=s.camera, a=s.audio;
+    const lux = l.lux!=null? l.lux : (cam.ok? Math.pow(cam.lum/255,2.2)*1100 : null);
+    if(lux==null && !a.ok) return "METEOROLOGICAL SENSORS STANDING BY. "+l.note+".";
+    const p=[];
+    if(lux!=null){
+      p.push("ILLUMINATION "+Math.round(lux)+" LUX"+(l.lux==null?" (OPTICAL ESTIMATE)":""));
+      p.push(band(lux,[[3,"AMBIENT LIGHT NEGLIGIBLE — EFFECTIVELY DARKNESS"],
+                       [80,"LOW LIGHT. VISIBILITY POOR"],
+                       [600,"ARTIFICIAL ILLUMINATION, ENCLOSED SPACE"],
+                       [8000,"DAYLIGHT, DIFFUSE"],
+                       [1e9,"DIRECT STELLAR ILLUMINATION"]]));
+    }
+    if(cam.ok&&cam.cct) p.push("SPECTRAL TEMPERATURE OF LOCAL SOURCE "+cam.cct+" KELVIN");
+    if(a.ok) p.push("ATMOSPHERIC PRESSURE WAVE "+fmt(a.db,0)+" DECIBELS RELATIVE");
+    return p.join(" — ")+".";
+  }},
+
+/* ---- BIOLOGICAL / MEDICAL ----------------------------------------- */
+BIO:{ label:"BIO", who:"DR. McCOY — MEDICAL SCAN", screen:"medical", needs:["camera"],
+  draw(t){
+    const s=SENSORS.state, W=C.W, H=C.H, cam=s.camera, mo=s.motion;
+    header("BIOLOGICAL","MEDICAL INSERT");
+    if(!cam.ok){
+      noSensor(cam.note,"OPEN THE LOWER COMPARTMENT AND PRESS THE HAND SCANNER");
+      C.text(W/2,H-8,"ESTIMATES ONLY — NOT A MEDICAL DEVICE",{size:8,color:"rgba(226,72,61,.9)",align:"center",spacing:1.4});
+      return;
+    }
+    /* the optical trace: this is a real photoplethysmogram */
+    const th=H*0.24;
+    C.grid(P,24,W-P*2,th,8,3,"rgba(80,220,140,.13)");
+    C.trace(P,24,W-P*2,th,cam.ppg,"#58e08a",{glow:true,width:1.6});
+    const q=cam.quality||0, colW=W*0.40-P, colY=24+th+18;
+    if(cam.bpm){
+      C.bigNum(P,colY+18,String(Math.round(cam.bpm)),"BPM","#58e08a",30);
+      C.text(P,colY+31,"CARDIAC RATE",{size:8,color:IK().dim,spacing:1.6});
+    }else{
+      const yy=C.wrap(P,colY,q>0.05?"ACQUIRING PULSE…":"PLACE A FINGERTIP OVER THE LENS",
+        colW,{size:10,color:"#f5d03a",spacing:1.6},13);
+      C.wrap(P,yy+3,cam.torch?"LAMP ENGAGED — HOLD STILL":"COVER THE LENS AND LAMP COMPLETELY",
+        colW,{size:8,color:IK().dim,spacing:1.2},10);
+    }
+    C.bands(W*0.44,24+th+6,W*0.56-P,H-(24+th+6)-14,[
+      {label:"SIGNAL", v:q, value:Math.round(q*100)+"%", color:"#63b8ff"},
+      {label:"VARIABILITY", v:cam.hrv? clamp(cam.hrv/120,0,1):0, value:cam.hrv? Math.round(cam.hrv)+" MS":"—", color:"#f5d03a"},
+      {label:"RESPIRATION", v:cam.resp? clamp(cam.resp/30,0,1):0, value:cam.resp? Math.round(cam.resp)+"/MIN":"—", color:"#58e08a"},
+      {label:"TREMOR", v:mo.ok? clamp(mo.ring.sd()/3,0,1):0, value:mo.ok? fmt(mo.ring.sd(),2):"—", color:"#e2483d"}
+    ]);
+    C.text(P,H-4,"ESTIMATES ONLY — NOT A MEDICAL DEVICE",{size:8,color:"rgba(226,72,61,.9)",spacing:1.3});
+  },
+  readout(){
+    const cam=SENSORS.state.camera;
+    if(!cam.ok) return "MEDICAL SENSOR NOT ENGAGED. "+cam.note+". PRESS THE HAND SCANNER TO BEGIN.";
+    if(!cam.bpm) return cam.quality>0.05
+      ? "I'M READING A PULSE — HOLD STILL, JIM. SIGNAL QUALITY "+Math.round(cam.quality*100)+" PERCENT."
+      : "NO CARDIAC SIGNAL. PLACE A FINGERTIP FULLY OVER THE LENS AND THE LAMP.";
+    const b=Math.round(cam.bpm);
+    const verdict=band(b,[[50,"BRADYCARDIC BY HUMAN NORMS"],
+                          [65,"RESTING RHYTHM, STEADY"],
+                          [90,"NORMAL FOR A HUMAN UNDER MILD EXERTION"],
+                          [120,"ELEVATED — HE'S UNDER STRAIN"],
+                          [1e9,"TACHYCARDIC. I'D CALL THAT A REACTION."]]);
+    return "CARDIAC RATE "+b+" PER MINUTE — "+verdict+
+      (cam.resp? " — RESPIRATION APPROXIMATELY "+Math.round(cam.resp)+" PER MINUTE":"")+
+      ". ESTIMATE ONLY.";
+  }},
+
+/* ---- ENERGY / EM SPECTRUM ----------------------------------------- */
+EM:{ label:"EM", who:"ENERGY SPECTRUM", screen:"data", needs:["audio"],
+  draw(t){
+    const s=SENSORS.state, W=C.W, H=C.H, a=s.audio, cam=s.camera;
+    header("ENERGY SPECTRUM","GAIN "+Math.round(APP.gain*100));
+    if(!a.ok){
+      noSensor(a.note,"ENGAGE ACOUSTIC SENSOR (CROWN 7)");
+      return;
+    }
+    const bins=a.bins, n=bins.length, cols=Math.max(24,Math.floor((W-P*2)/6));
+    const x0=P, y0=26, w=W-P*2, h=H*0.42;
+    const g=C.g;
+    /* logarithmic frequency axis, chunky printed-bar rendering */
+    for(let i=0;i<cols;i++){
+      const f0=Math.pow(10, lerp(1.3,4.34,i/cols));        /* 20 Hz → 22 kHz */
+      const bi=clamp(Math.round(f0/(a.rate/2/n)),1,n-1);
+      const db=bins[bi];
+      const v=clamp((db+100)/(70*(1.4-APP.gain)),0,1);
+      const bw=w/cols;
+      g.fillStyle = v>0.78? "#e2483d" : v>0.5? "#f5d03a" : "#58e08a";
+      g.fillRect(x0+i*bw+0.5, y0+h-v*h, bw-1.2, v*h);
+    }
+    C.grid(x0,y0,w,h,8,4,"rgba(255,255,255,.09)");
+    C.text(x0,y0+h+11,"20 HZ",{size:8,color:IK().dim,spacing:1.2});
+    C.text(x0+w,y0+h+11,"22 KHZ",{size:8,color:IK().dim,align:"right",spacing:1.2});
+    C.bigNum(P,H*0.80,fmt(a.peakHz,0),"HZ","#f5d03a",22);
+    C.text(P,H*0.80+11,"DOMINANT EMISSION",{size:8,color:"rgba(236,234,217,.7)",spacing:1.4});
+    const flags=[];
+    if(a.hum) flags.push(a.hum+" HZ POWER CONDUIT");
+    if(cam.ok&&cam.ir) flags.push("INFRARED SOURCE (EST.)");
+    if(a.db>-24) flags.push("HIGH ACOUSTIC ENERGY");
+    C.text(W-P,H*0.80,flags.length?flags.join("  ·  "):"NO ANOMALOUS EMISSION",
+      {size:9,color:flags.length?"#e2483d":"#58e08a",align:"right",spacing:1.3});
+  },
+  readout(){
+    const a=SENSORS.state.audio, cam=SENSORS.state.camera;
+    if(!a.ok) return "ACOUSTIC SENSOR NOT ENGAGED. "+a.note+".";
+    const p=["DOMINANT EMISSION AT "+fmt(a.peakHz,0)+" HERTZ",
+             "FIELD STRENGTH "+fmt(a.db,0)+" DECIBELS"];
+    if(a.hum) p.push("PERIODIC "+a.hum+" HERTZ COMPONENT — CONSISTENT WITH AN ARTIFICIAL POWER SOURCE");
+    else p.push("NO PERIODIC ARTIFICIAL COMPONENT DETECTED");
+    if(cam.ok&&cam.ir) p.push("POSSIBLE INFRARED EMISSION IN THE OPTICAL PATH — ESTIMATE ONLY");
+    return p.join(" — ")+".";
+  }},
+
+/* ---- NAVIGATION / POSITION ---------------------------------------- */
+NAV:{ label:"NAV", who:"POSITIONAL FIX", screen:"science", needs:["geo"],
+  draw(t){
+    const s=SENSORS.state, W=C.W, H=C.H, g=s.geo, o=s.orient;
+    header("POSITIONAL FIX", g.fix? "FIX "+clockStr(new Date(g.fix)) : "NO FIX");
+    C.sweep(W*0.80,H*0.40,Math.min(W*0.17,H*0.30),t,"rgba(245,208,58,.85)");
+    if(g.lat==null){
+      C.text(P,46,"PLANETARY COORDINATES",{size:10,color:IK().fg,spacing:2});
+      C.text(P,60,g.note,{size:9,color:"#e2483d",spacing:1.6});
+      C.text(P,74,"ENGAGE POSITION SENSOR (CROWN 8)",{size:8,color:IK().dim,spacing:1.2});
+    }else{
+      C.text(P,40,"LAT "+fmt(g.lat,5)+"°",{size:12,color:IK().fg,spacing:1.8});
+      C.text(P,56,"LON "+fmt(g.lon,5)+"°",{size:12,color:IK().fg,spacing:1.8});
+      C.text(P,72,"ELEV "+(g.alt!=null?fmt(g.alt,0)+" M":"—")+"   ±"+fmt(g.acc,0)+" M",
+        {size:9,color:IK().dim,spacing:1.3});
+      if(o.ok&&o.heading!=null)
+        C.text(P,86,"HEADING "+Math.round(o.heading)+"° "+compassOf(o.heading),
+          {size:9,color:IK().dim,spacing:1.3});
+    }
+    if(APP.waypoint && g.lat!=null){
+      const d=haversine(g,APP.waypoint), b=bearing(g,APP.waypoint);
+      C.rule(P,H*0.62,W-P,H*0.62,IK().rule,1.2);
+      C.text(P,H*0.62+16,"BEAM-DOWN POINT",{size:9,color:IK().fg,spacing:1.8});
+      C.bigNum(P,H*0.62+42, d>1200? fmt(d/1000,2):fmt(d,0), d>1200?"KM":"M",IK().fg,22);
+      C.text(W-P,H*0.62+42,"BEARING "+Math.round(b)+"° "+compassOf(b),
+        {size:11,color:IK().fg,align:"right",spacing:1.6});
+    }else{
+      /* no waypoint yet: give the space over to a heading tape, the way a
+         survey instrument would show bearing at a glance */
+      const k=IK(), ty=H*0.66, tw=W-P*2;
+      C.rule(P,H*0.60,W-P,H*0.60,k.rule,1.2);
+      C.text(P,H*0.60+14,"HEADING TAPE",{size:9,color:k.fg,spacing:1.8});
+      if(o.ok&&o.heading!=null){
+        const hdg=o.heading;
+        C.g.save(); C.g.beginPath(); C.g.rect(P,ty,tw,20); C.g.clip();
+        for(let d=-60;d<=60;d+=15){
+          const deg=((hdg+d)%360+360)%360;
+          const x=P+tw/2+(d/120)*tw;
+          C.rule(x,ty+3,x,ty+9,k.rule,1.4);
+          C.text(x,ty+19,compassOf(deg)+" "+Math.round(deg),{size:7,color:k.dim,align:"center",spacing:.8});
+        }
+        C.g.restore();
+        C.rule(P+tw/2,ty-2,P+tw/2,ty+12,"#e2483d",2);
+        C.text(P+tw/2,ty-5,Math.round(hdg)+"° "+compassOf(hdg),{size:10,color:k.fg,align:"center",spacing:1.4});
+      }else{
+        C.text(P,ty+10,"COMPASS "+o.note,{size:9,color:"#e2483d",spacing:1.4});
+      }
+      C.fit(P,H-5,"CROWN 3 MARKS THE BEAM-DOWN POINT"+
+        (g.spd!=null&&isFinite(g.spd)?"  ·  SPEED "+fmt(g.spd,1)+" M/S":""),
+        W-P*2,{size:8,color:IK().dim,spacing:1.2});
+    }
+  },
+  readout(){
+    const g=SENSORS.state.geo, o=SENSORS.state.orient;
+    if(g.lat==null) return "NO POSITIONAL FIX. "+g.note+".";
+    let s="POSITION "+fmt(Math.abs(g.lat),4)+" DEGREES "+(g.lat>=0?"NORTH":"SOUTH")+
+          ", "+fmt(Math.abs(g.lon),4)+" DEGREES "+(g.lon>=0?"EAST":"WEST")+
+          " — ACCURACY "+fmt(g.acc,0)+" METERS";
+    if(g.alt!=null) s+=" — ELEVATION "+fmt(g.alt,0)+" METERS";
+    if(APP.waypoint){
+      const d=haversine(g,APP.waypoint), b=bearing(g,APP.waypoint);
+      s+=" — BEAM-DOWN POINT BEARS "+Math.round(b)+" DEGREES AT "+
+         (d>1200? fmt(d/1000,2)+" KILOMETERS" : fmt(d,0)+" METERS");
+    }
+    if(o.ok&&o.heading!=null) s+=" — HEADING "+Math.round(o.heading)+" DEGREES";
+    return s+".";
+  }},
+
+/* ---- RECORD / PLAYBACK -------------------------------------------- */
+LOG:{ label:"LOG", who:"RECORDER PLAYBACK", screen:"data", needs:[],
+  entries:[], loaded:false,
+  draw(t){
+    const W=C.W,H=C.H;
+    header("RECORDER", this.entries.length+" ENTRIES");
+    if(!this.loaded){ this.loaded=true; LOG.all().then(a=>this.entries=a); }
+    if(!this.entries.length){
+      C.text(W/2,H*0.46,"NO RECORDS",{size:14,color:"#f5d03a",align:"center",spacing:3});
+      C.text(W/2,H*0.46+16,"CROWN 2 RECORDS THE CURRENT SCAN",{size:8,color:"rgba(236,234,217,.7)",align:"center",spacing:1.4});
+      return;
+    }
+    let y=34;
+    const lh=Math.max(15,H*0.115);
+    for(let i=0;i<this.entries.length && y<H-8;i++){
+      const e=this.entries[i];
+      C.text(P,y,"SD "+e.sd+"  "+e.mode+(e.kind&&e.kind!=="scan"?"  ["+e.kind.toUpperCase()+"]":""),
+        {size:9,color:"#f5d03a",spacing:1.4});
+      const txt=(e.text||"").slice(0,64);
+      C.text(P,y+10,txt,{size:8,color:IK().dim,spacing:1});
+      C.rule(P,y+13,W-P,y+13,"rgba(255,255,255,.08)",1);
+      y+=lh;
+    }
+  },
+  readout(){
+    const n=this.entries.length;
+    if(!n) return "RECORDER EMPTY. THE UNIT LOGS EVERY SCAN YOU MARK.";
+    const e=this.entries[0];
+    return "LAST ENTRY, STARDATE "+e.sd+", "+e.mode+" — "+(e.text||"").slice(0,120);
+  }},
+
+/* ---- LIBRARY COMPUTER --------------------------------------------- */
+LIB:{ label:"LIB", who:"LIBRARY COMPUTER", screen:"data", needs:[],
+  draw(t){
+    const W=C.W,H=C.H;
+    header("LIBRARY COMPUTER","LOCAL BANKS");
+    const rows=[
+      ["PLANETARY CLASSIFICATION", LIB.planets.length+" ENTRIES"],
+      ["MINERALS & ELEMENTS",      LIB.minerals.length+" ENTRIES"],
+      ["MEDICAL REFERENCE",        LIB.medical.length+" ENTRIES"],
+      ["GENERAL / TERMINOLOGY",    LIB.glossary.length+" ENTRIES"],
+      ["COMPUTATION",             "WARP N, STARDATE, RANGE"]
+    ];
+    let y=40;
+    rows.forEach(r=>{
+      C.text(P,y,r[0],{size:10,color:"#f5d03a",spacing:1.6});
+      C.text(W-P,y,r[1],{size:9,color:IK().dim,align:"right",spacing:1.2});
+      C.rule(P,y+5,W-P,y+5,"rgba(255,255,255,.10)",1);
+      y+=Math.max(18,H*0.13);
+    });
+    C.text(W/2,H-6,"PRESS LIBRARY TO QUERY THE BANKS",{size:8,color:"rgba(236,234,217,.7)",align:"center",spacing:1.3});
+  },
+  readout(){ return "LIBRARY COMPUTER ONLINE. LOCAL BANKS ONLY — NO SUBSPACE LINK REQUIRED. STATE YOUR QUERY."; }},
+
+/* ---- SELF-DIAGNOSTIC ---------------------------------------------- */
+DIAG:{ label:"DIAG", who:"UNIT DIAGNOSTIC", screen:"data", needs:[],
+  draw(t){
+    const s=SENSORS.state,W=C.W,H=C.H;
+    header("UNIT DIAGNOSTIC");
+    const rows=[
+      ["INERTIAL / GRAVIMETRIC", s.motion.ok, s.motion.ok? Math.round(s.motion.hz)+" HZ" : s.motion.note],
+      ["ORIENTATION / COMPASS",  s.orient.ok, s.orient.ok? (s.orient.absolute?"ABSOLUTE":"RELATIVE") : s.orient.note],
+      ["MAGNETOMETER",           s.mag.ok,    s.mag.ok? fmt(s.mag.mag,1)+" µT" : s.mag.note],
+      ["POSITION",               s.geo.ok,    s.geo.ok? "±"+fmt(s.geo.acc,0)+" M" : s.geo.note],
+      ["PHOTOMETRIC",            s.light.ok,  s.light.ok? Math.round(s.light.lux)+" LUX" : s.light.note],
+      ["ACOUSTIC",               s.audio.ok,  s.audio.ok? fmt(s.audio.db,0)+" DB" : s.audio.note],
+      ["OPTICAL",                s.camera.ok, s.camera.ok? (s.camera.torch?"LAMP ON":"ACTIVE") : s.camera.note],
+      ["POWER CELL",             s.power.ok,  s.power.ok? Math.round(s.power.level*100)+"%"+(s.power.charging?" CHG":"") : s.power.note],
+      ["SUBSPACE LINK",          null,        s.link.online? "CARRIER PRESENT · UNUSED" : "NONE · INDEPENDENT"]
+    ];
+    let y=34; const lh=Math.max(13,(H-44)/rows.length);
+    rows.forEach(r=>{
+      C.dotMatrix(P,y-7,8,8,1,1,()=> r[1]===null? "#f5d03a" : r[1]? "#58e08a":"#e2483d");
+      const lw=C.text(P+13,y,r[0],{size:9,color:IK().fg,spacing:1.3});
+      const budget=W-P*2-13-lw-10;
+      C.fit(W-P,y,r[2],budget,{size:8,align:"right",spacing:1.1,
+        color: r[1]===null? "rgba(245,208,58,.95)" : r[1]? "rgba(88,224,138,.95)":"rgba(226,72,61,.95)"});
+      y+=lh;
+    });
+  },
+  readout(){
+    const s=SENSORS.state;
+    const on=["motion","orient","mag","geo","light","audio","camera","power"].filter(k=>s[k].ok);
+    return "DIAGNOSTIC COMPLETE. "+on.length+" OF 8 SENSOR CLUSTERS RESPONDING"+
+      (s.link.online?"":" — NO SUBSPACE LINK, THE UNIT IS OPERATING ENTIRELY ON ITS OWN BANKS")+".";
+  }}
+};
+const MODE_ORDER=["GEO","MET","BIO","EM","NAV","LOG","LIB","DIAG"];
+
+/* =====================================================================
+   H. THE MOIRÉ DISCS — Wah Chang's trick: two printed discs of fine
+   concentric rings, offset and counter-rotating. Where the rings cross,
+   an interference pattern crawls across the window. On the prop it is
+   the whole "it is working" language of the device, so here its speed is
+   driven by live scan intensity rather than being decorative.
+   ===================================================================== */
+function buildMoire(){
+  /* Concentric rings would be rotationally symmetric — spinning them
+     would show nothing at all. The pattern only crawls if the printing
+     is chiral, so each disc is an Archimedean spiral of slightly
+     different pitch, wound in opposite directions. */
+  const spiral=(turns,handed)=>{
+    const a=52/(turns*Math.PI*2); let d="", first=true;
+    for(let th=0; th<turns*Math.PI*2; th+=0.10){
+      const r=a*th, x=50+Math.cos(th*handed)*r, y=50+Math.sin(th*handed)*r;
+      d+=(first?"M":"L")+x.toFixed(2)+" "+y.toFixed(2); first=false;
+    }
+    return d;
+  };
+  const g1=$("#disc1"), g2=$("#disc2");
+  if(g1) g1.innerHTML='<path d="'+spiral(21,1)+'" fill="none" stroke="#efe9d6" stroke-width="1.15" stroke-linecap="round"/>';
+  if(g2) g2.innerHTML='<path d="'+spiral(24,-1)+'" fill="none" stroke="#b9b4a2" stroke-width="1.05" stroke-linecap="round"/>'+
+                      '<circle cx="50" cy="50" r="3" fill="#0a0a09"/>';
+}
+
+/* =====================================================================
+   I. INTERFACE — buttons, watch-crowns, knurled knobs, compartments.
+   ===================================================================== */
+const UI = {
+  crowns:[
+    {name:"SCAN / HOLD",       fn(){ APP.scanning=!APP.scanning; flash(APP.scanning?"SCANNING":"SCAN HOLD"); }},
+    {name:"MARK RECORD",       fn(){ recordScan(); }},
+    {name:"MARK BEAM-DOWN PT", fn(){
+        const g=SENSORS.state.geo;
+        if(g.lat==null){ flash("NO POSITIONAL FIX TO MARK"); return; }
+        APP.waypoint={lat:g.lat,lon:g.lon};
+        LOG.add({mode:"NAV",kind:"waypoint",text:"BEAM-DOWN POINT MARKED "+fmt(g.lat,5)+", "+fmt(g.lon,5)});
+        flash("BEAM-DOWN POINT MARKED");
+      }},
+    {name:"SCREEN INSERT",     fn(){ APP.insert=(APP.insert+1)%INSERTS.length; flash("SCREEN INSERT: "+INSERTS[APP.insert].toUpperCase()); }},
+    {name:"HAND LAMP",         fn(){ toggleTorch(); }},
+    {name:"OPTICAL SENSOR",    fn(){ toggleCamera(); }},
+    {name:"ACOUSTIC SENSOR",   fn(){ toggleAudioSensor(); }},
+    {name:"POSITION SENSOR",   fn(){ SENSORS.startGeo(); flash("POSITION SENSOR ENGAGED"); }}
+  ],
+  build(){
+    const bar=$("#modebar");
+    MODE_ORDER.forEach(id=>{
+      const b=document.createElement("button");
+      b.className="btn"+(id===APP.mode?" sel":""); b.textContent=MODES[id].label; b.dataset.mode=id;
+      b.addEventListener("click",()=>setMode(id));
+      bar.appendChild(b);
+    });
+    const cr=$("#crowns");
+    this.crowns.forEach((c,i)=>{
+      const d=document.createElement("div");
+      d.className="crown"; d.title=(i+1)+" — "+c.name;
+      d.addEventListener("click",()=>{
+        Audio_.click(); d.classList.add("lit"); setTimeout(()=>d.classList.remove("lit"),220);
+        c.fn();
+      });
+      cr.appendChild(d);
+    });
+    this.knob($("#knobRange"),v=>{APP.range=v;},()=>APP.range);
+    this.knob($("#knobGain"), v=>{APP.gain=v;}, ()=>APP.gain);
+    this.paintKnobs();
+  },
+  knob(el,set,get){
+    let dragging=false, startY=0, startV=0;
+    const down=e=>{ dragging=true; startY=(e.touches?e.touches[0].clientY:e.clientY); startV=get(); el.setPointerCapture&&e.pointerId!=null&&el.setPointerCapture(e.pointerId); };
+    const move=e=>{
+      if(!dragging) return;
+      const y=(e.touches?e.touches[0].clientY:e.clientY);
+      set(clamp(startV+(startY-y)/160,0,1));
+      UI.paintKnobs(); e.preventDefault();
+    };
+    const up=()=>{ if(dragging){ dragging=false; Audio_.click(); } };
+    el.addEventListener("pointerdown",down); addEventListener("pointermove",move,{passive:false}); addEventListener("pointerup",up);
+    el.addEventListener("touchstart",down,{passive:true}); addEventListener("touchmove",move,{passive:false}); addEventListener("touchend",up);
+    el.addEventListener("dblclick",()=>{ set(0.5); UI.paintKnobs(); });
+  },
+  paintKnobs(){
+    $("#knobRange").style.transform="rotate("+lerp(-140,140,APP.range)+"deg)";
+    $("#knobGain").style.transform ="rotate("+lerp(-140,140,APP.gain )+"deg)";
+  }
+};
+
+function flash(msg){ SAY.set("UNIT",msg); }
+
+function setMode(id){
+  APP.mode=id;
+  $$("#modebar .btn").forEach(b=>b.classList.toggle("sel",b.dataset.mode===id));
+  Audio_.chirp(true);
+  SAY.last="";
+  /* sensors are only requested when a scan actually needs them */
+  if(id==="BIO" && !SENSORS.state.camera.ok) toggleCamera(true);
+  if(id==="EM"  && !SENSORS.state.audio.ok)  toggleAudioSensor(true);
+  if(id==="NAV" && SENSORS.state.geo.lat==null) SENSORS.startGeo();
+  if(id==="MET"){ SENSORS.startLight(); }
+  if(id==="LOG"){ MODES.LOG.loaded=false; }
+  /* the screen insert follows the mode, as the production ones did */
+  APP.insert = MODES[id].screen==="medical"?1 : MODES[id].screen==="data"?2 : 0;
+}
+
+async function toggleCamera(force){
+  const s=SENSORS.state.camera;
+  if(s.ok && !force){ SENSORS.stopCamera(); flash("OPTICAL SENSOR SECURED"); return; }
+  if(s.ok) return;
+  flash("ENGAGING OPTICAL SENSOR…");
+  const ok=await SENSORS.startCamera(false);
+  flash(ok? "OPTICAL SENSOR ENGAGED"+(s.torch?" — LAMP ON":"") : "OPTICAL SENSOR: "+s.note);
+}
+async function toggleTorch(){
+  const s=SENSORS.state.camera;
+  if(!s.ok){ await toggleCamera(true); }
+  if(!s.track) { flash("NO LAMP AVAILABLE"); return; }
+  try{
+    const caps=s.track.getCapabilities?s.track.getCapabilities():{};
+    if(!caps.torch){ flash("THIS HULL HAS NO CONTROLLABLE LAMP"); return; }
+    s.torch=!s.torch;
+    await s.track.applyConstraints({advanced:[{torch:s.torch}]});
+    flash(s.torch?"HAND LAMP ENGAGED":"HAND LAMP OFF");
+  }catch(e){ flash("LAMP CONTROL REFUSED"); }
+}
+async function toggleAudioSensor(force){
+  const s=SENSORS.state.audio;
+  if(s.ok && !force){ flash("ACOUSTIC SENSOR REMAINS ENGAGED"); return; }
+  flash("ENGAGING ACOUSTIC SENSOR…");
+  const ok=await SENSORS.startAudio();
+  flash(ok?"ACOUSTIC SENSOR ENGAGED":"ACOUSTIC SENSOR: "+s.note);
+}
+
+/* ---- writing a record: the "corder" half of the name --------------- */
+function recordScan(){
+  const m=MODES[APP.mode];
+  const rec={mode:APP.mode,kind:"scan",text:m.readout(),
+             data:snapshot()};
+  LOG.add(rec).then(()=>{ MODES.LOG.loaded=false; });
+  Audio_.blip(1600,0.09,"square",0.4);
+  flash("RECORDED — STARDATE "+stardate());
+}
+function snapshot(){
+  const s=SENSORS.state;
+  return {
+    mag:s.mag.ok? +s.mag.mag.toFixed(2):null,
+    g:s.motion.ok? +s.motion.g.toFixed(3):null,
+    tilt:s.motion.ok? +s.motion.tiltDeg.toFixed(1):null,
+    lux:s.light.lux!=null? Math.round(s.light.lux):null,
+    db:s.audio.ok? +s.audio.db.toFixed(1):null,
+    peakHz:s.audio.ok? Math.round(s.audio.peakHz):null,
+    bpm:s.camera.bpm? Math.round(s.camera.bpm):null,
+    lat:s.geo.lat, lon:s.geo.lon, alt:s.geo.alt
+  };
+}
+
+/* ---- voice memo, stored on the device ------------------------------ */
+let recorder=null;
+async function toggleVoiceMemo(){
+  if(recorder && recorder.state==="recording"){ recorder.stop(); return; }
+  if(!window.MediaRecorder){ flash("NO RECORDING HARDWARE"); return; }
+  let stream=SENSORS.state.audio.stream;
+  if(!stream){ await SENSORS.startAudio(); stream=SENSORS.state.audio.stream; }
+  if(!stream){ flash("ACOUSTIC SENSOR REQUIRED FOR VOICE ENTRY"); return; }
+  try{
+    recorder=new MediaRecorder(stream);
+    const chunks=[];
+    recorder.ondataavailable=e=>chunks.push(e.data);
+    recorder.onstop=()=>{
+      const blob=new Blob(chunks,{type:recorder.mimeType||"audio/webm"});
+      LOG.add({mode:APP.mode,kind:"voice",text:"VOICE ENTRY — "+Math.round(blob.size/1024)+" KB",blob:blob});
+      MODES.LOG.loaded=false;
+      $("#chipRec").classList.remove("on");
+      flash("VOICE ENTRY FILED");
+      Audio_.blip(880,0.1,"square",0.35);
+    };
+    recorder.start();
+    $("#chipRec").classList.add("on");
+    flash("RECORDING — PRESS RECORD AGAIN TO CLOSE THE ENTRY");
+  }catch(e){ flash("RECORDER REFUSED"); }
+}
+
+/* =====================================================================
+   J. MODALS — library query, information, log detail.
+   ===================================================================== */
+function openModal(html){
+  $("#modalSheet").innerHTML=html+'<div><button id="modalClose">CLOSE</button></div>';
+  $("#modal").classList.add("show");
+  $("#modalClose").addEventListener("click",closeModal);
+}
+function closeModal(){ $("#modal").classList.remove("show"); }
+$("#modal").addEventListener("click",e=>{ if(e.target.id==="modal") closeModal(); });
+
+function openLibrary(){
+  openModal('<h2>Library Computer</h2>'+
+    '<input id="libq" placeholder="QUERY — E.G. CLASS M, DILITHIUM, WARP 6" autocomplete="off">'+
+    '<div id="libout"><p style="color:#8d8875">Local banks only. Nothing is fetched; nothing is sent.</p></div>');
+  const q=$("#libq"), out=$("#libout");
+  q.focus();
+  q.addEventListener("input",()=>{
+    const hits=LIB.search(q.value);
+    out.innerHTML = hits.length
+      ? hits.map(h=>'<div class="lib-hit"><b>'+h.k+'</b> <span style="color:#6f8ba3">'+h.cat+'</span><br>'+h.v+'</div>').join("")
+      : '<p style="color:#8d8875">No entry in these banks.</p>';
+  });
+}
+
+function openInfo(){
+  const s=SENSORS.state;
+  const row=(k,v)=>'<tr><td style="padding:3px 10px 3px 0;color:#8fb6d8">'+k+'</td><td>'+v+'</td></tr>';
+  openModal('<h2>Tricorder — Type I</h2>'+
+   '<p>A working recreation of the hand-held unit Wah Ming Chang built for Star Trek in 1966: '+
+   'sensor, recorder and computer in one case. Every reading below comes from this device\'s own hardware. '+
+   'Nothing is uploaded, nothing is fetched, and it runs with the network switched off.</p>'+
+   '<h3>Controls</h3>'+
+   '<p>Tap the hood to open and close the unit. The eight mode keys select the scan class. '+
+   'The row of watch-crowns are, left to right: '+
+   UI.crowns.map((c,i)=>(i+1)+" "+c.name).join(" · ")+'. '+
+   'The two knurled knobs are RANGE and GAIN — drag them vertically, double-tap to centre. '+
+   'The lower compartment holds the medical hand scanner; press it to begin a biological scan.</p>'+
+   '<h3>What the readings actually are</h3><table style="font-size:11px">'+
+   row("GEO","Magnetometer field strength in microtesla plus a baseline delta (a real metal detector), device gravity vector, tilt, and an FFT of the accelerometer for vibration.")+
+   row("MET","Ambient light sensor where the browser has one, otherwise a camera luminance estimate; colour temperature from the camera\'s R:B ratio; sound pressure from the microphone.")+
+   row("BIO","Photoplethysmography: the camera watches the red channel of your fingertip and the pulse is extracted from it. Estimates only — this is not a medical device.")+
+   row("EM","Live FFT of the microphone. A strong 50 or 60 Hz component is flagged as an artificial power source. Infrared is a camera heuristic, labelled as an estimate.")+
+   row("NAV","GPS position, elevation and accuracy, plus range and bearing to a marked beam-down point. GPS needs no network.")+
+   row("LOG","Every marked scan and voice entry, kept in this browser only.")+
+   '</table>'+
+   '<h3>Sensor status</h3><table style="font-size:11px">'+
+   row("INERTIAL",s.motion.ok?"online":s.motion.note)+row("COMPASS",s.orient.ok?"online":s.orient.note)+
+   row("MAGNETOMETER",s.mag.ok?"online":s.mag.note)+row("POSITION",s.geo.ok?"online":s.geo.note)+
+   row("PHOTOMETRIC",s.light.ok?"online":s.light.note)+row("ACOUSTIC",s.audio.ok?"online":s.audio.note)+
+   row("OPTICAL",s.camera.ok?"online":s.camera.note)+row("POWER CELL",s.power.ok?"online":s.power.note)+
+   '</table>'+
+   '<h3>Notes on accuracy</h3>'+
+   '<p>Magnetometer and ambient-light sensors are exposed by only some browsers; where they are missing the '+
+   'unit says NO SENSOR rather than inventing a number. Pulse, respiration, colour temperature, illumination-from-camera '+
+   'and infrared detection are estimates and are labelled as such on screen.</p>'+
+   '<p style="color:#8d8875">Star Trek is a trademark of its owner. This is a fan-made instrument panel; '+
+   'no show assets are used — the artwork is drawn in code and the sounds are synthesised.</p>');
+}
+
+function openLogDetail(){
+  LOG.all().then(all=>{
+    const body = all.length
+      ? all.map(e=>{
+          const line='<div class="lib-hit"><b>SD '+e.sd+' · '+e.mode+(e.kind!=="scan"?" · "+e.kind:"")+'</b><br>'+
+                     (e.text||"")+'<br><span style="color:#6f8ba3;font-size:10px">'+
+                     new Date(e.ts).toLocaleString()+'</span>'+
+                     (e.blob? '<br><audio controls src="'+URL.createObjectURL(e.blob)+'" style="width:100%;margin-top:6px"></audio>':'')+
+                     '</div>';
+          return line;
+        }).join("")
+      : '<p style="color:#8d8875">No records.</p>';
+    openModal('<h2>Recorder</h2>'+body+
+      '<div><button id="expBtn">EXPORT</button> <button id="clrBtn">ERASE ALL</button></div>');
+    const exp=$("#expBtn"), clr=$("#clrBtn");
+    if(exp) exp.addEventListener("click",()=>{
+      const txt=all.map(e=>"SD "+e.sd+"  "+e.mode+"  "+new Date(e.ts).toISOString()+"\n"+(e.text||"")+"\n").join("\n");
+      const url=URL.createObjectURL(new Blob([txt],{type:"text/plain"}));
+      const a=document.createElement("a"); a.href=url; a.download="tricorder-log.txt"; a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),4000);
+    });
+    if(clr) clr.addEventListener("click",()=>{ LOG.clear().then(()=>{ MODES.LOG.loaded=false; closeModal(); flash("RECORDER ERASED"); }); });
+  });
+}
+
+/* =====================================================================
+   K. MAIN LOOP — sample, draw, narrate, and let the hardware state drive
+   the lamps, the moiré speed and the pitch of the warble.
+   ===================================================================== */
+let lastFrame=nowMs(), camFrames=0, camT0=nowMs();
+function frame(){
+  const t=(nowMs()-APP.t0)/1000;
+  if(C.cv.offsetWidth && (C.cv.offsetWidth!==C.W || C.cv.offsetHeight!==C.H)) C.resize();
+  if(APP.scanning){
+    SENSORS.sampleAudio();
+    if(SENSORS.state.camera.ok){
+      SENSORS.sampleCamera(); camFrames++;
+      if(nowMs()-camT0>2000){ SENSORS.state.camera.fps=camFrames/((nowMs()-camT0)/1000); camFrames=0; camT0=nowMs(); }
+    }
+  }
+  const m=MODES[APP.mode];
+  C.field(INSERTS[APP.insert]);
+  try{ m.draw(t); }
+  catch(e){
+    C.text(P,40,"SCAN FAULT",{size:12,color:"#e2483d",spacing:2});
+    C.wrap(P,58,String(e&&e.message||e),C.W-P*2,{size:8,color:"#e2483d",spacing:1.1},10);
+    if(!APP._faulted){ APP._faulted=true; console.error("draw fault in "+APP.mode+":",e); }
+  }
+  if(!APP.scanning){
+    const g=C.g;
+    g.save(); g.fillStyle="rgba(226,72,61,.85)";
+    g.fillRect(C.W-58,22,52,12); g.restore();
+    C.text(C.W-32,32,"HOLD",{size:9,color:"#0b0b09",align:"center",spacing:2});
+  }
+  C.crt(t);
+  SAY.set(m.who, APP.scanning? m.readout() : "SCAN HELD. LAST READING RETAINED.");
+
+  /* --- intensity: one number that drives sound, lamps and moiré --- */
+  const s=SENSORS.state;
+  let x=0.15;
+  if(APP.mode==="GEO"&&s.mag.ok&&s.mag.base!=null) x=clamp(Math.abs(s.mag.mag-s.mag.base)/50,0,1);
+  else if(APP.mode==="EM"&&s.audio.ok) x=clamp((s.audio.db+80)/60,0,1);
+  else if(APP.mode==="BIO"&&s.camera.ok) x=clamp(s.camera.quality,0,1);
+  else if(APP.mode==="MET"&&s.light.lux!=null) x=clamp(Math.log10(s.light.lux+1)/4,0,1);
+  else if(s.motion.ok) x=clamp(s.motion.ring.sd()/2.5,0,1);
+  APP.intensity=lerp(APP.intensity,x,0.08);
+
+  APP.alert = (APP.mode==="GEO"&&s.mag.ok&&s.mag.base!=null&&Math.abs(s.mag.mag-s.mag.base)>35)
+           || (APP.mode==="EM"&&s.audio.hum)
+           || (APP.mode==="BIO"&&s.camera.bpm>120);
+  $("#lampG").classList.toggle("on",APP.scanning && (s.motion.ok||s.audio.ok||s.camera.ok||s.mag.ok||s.geo.ok));
+  $("#lampA").classList.toggle("on",(Math.sin(t*(2+APP.intensity*10))>0));
+  $("#lampR").classList.toggle("on",!!APP.alert && Math.sin(t*9)>0);
+
+  const spin=lerp(9,1.6,APP.intensity);
+  $("#disc1").style.animationDuration=spin.toFixed(2)+"s";
+  $("#disc2").style.animationDuration=(spin*1.45).toFixed(2)+"s";
+  if(APP.scanning && Audio_.on && APP.open) { Audio_.startWarble(); Audio_.setIntensity(APP.intensity); }
+  else Audio_.stopWarble();
+
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================================
+   L. BOOT
+   ===================================================================== */
+function openHood(open){
+  APP.open=open;
+  $("#device").classList.toggle("open",open);
+  Audio_.thunk();
+  setTimeout(()=>SCR.resize(),380);
+  if(open){ SENSORS.startMotion(); SENSORS.startOrient(); }
+}
+
+function wire(){
+  $("#hood").addEventListener("click",()=>openHood(!APP.open));
+  $("#latch").addEventListener("click",e=>{ e.stopPropagation(); openHood(!APP.open); });
+  $("#doorLower").addEventListener("click",e=>{ e.stopPropagation();
+    $("#comp-lower").classList.toggle("open"); Audio_.thunk(); });
+  $("#scanner").addEventListener("click",async e=>{
+    e.stopPropagation();
+    $("#scanner").classList.add("active");
+    setMode("BIO");
+    flash("HAND SCANNER ENGAGED — PLACE A FINGERTIP OVER THE LENS");
+    setTimeout(()=>$("#scanner").classList.remove("active"),4000);
+  });
+  $("#chipSound").addEventListener("click",e=>{
+    const on=Audio_.toggle(); e.target.classList.toggle("on",on); flash(on?"AUDIO ON":"AUDIO MUTED"); });
+  $("#chipVoice").addEventListener("click",e=>{
+    SAY.voice=!SAY.voice; e.target.classList.toggle("on",SAY.voice);
+    flash(SAY.voice?"VOICE READOUT ENGAGED":"VOICE READOUT OFF");
+    if(SAY.voice) SAY.speak("Voice readout engaged.");
+  });
+  $("#chipRec").addEventListener("click",toggleVoiceMemo);
+  $("#chipLib").addEventListener("click",openLibrary);
+  $("#chipInfo").addEventListener("click",openInfo);
+  addEventListener("keydown",e=>{
+    const i=parseInt(e.key,10);
+    if(i>=1&&i<=8) setMode(MODE_ORDER[i-1]);
+    if(e.key==="h"||e.key==="H") openHood(!APP.open);
+    if(e.key===" "){ APP.scanning=!APP.scanning; e.preventDefault(); }
+    if(e.key==="m"||e.key==="M") recordScan();
+    if(e.key==="Escape") closeModal();
+  });
+  /* double-tap the ticker to see the full recorder */
+  $("#ticker").addEventListener("click",openLogDetail);
+}
+
+async function boot(){
+  $("#boot").style.display="none";
+  Audio_.init(); Audio_.resume();
+  await LOG.open();
+  SENSORS.startMag(); SENSORS.startLight(); SENSORS.startPower();
+  await SENSORS.startMotion(); await SENSORS.startOrient();
+  openHood(true);
+  Audio_.chirp(true);
+  setMode("GEO");
+  flash("TRICORDER ACTIVE. ALL READINGS ORIGINATE ON THIS UNIT.");
+}
+
+buildMoire(); SCR.init(); UI.build(); wire();
+$("#chipSound").classList.add("on");
+$("#bootBtn").addEventListener("click",boot);
+requestAnimationFrame(frame);
+
+/* offline cache — the only reason a second file exists at all */
+if("serviceWorker" in navigator && location.protocol!=="file:"){
+  addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+}
+</script>
+</body>
+</html>
