@@ -26,8 +26,8 @@ on `file://`, so those modes will honestly report `NO SENSOR`. To use it as a re
 instrument, serve it over https (GitHub Pages is enough) and install it — after the first load the
 service worker keeps it working in airplane mode.
 
-On iOS, motion and orientation need an explicit grant that only a tap can trigger: opening the
-hood is that tap.
+On iOS, motion and orientation need an explicit grant that only a tap can trigger: opening a
+drawer is that tap.
 
 ## The Android app
 
@@ -58,20 +58,24 @@ key — uninstall before reinstalling if Android refuses the update.
 
 ## Controls
 
+The prop has no buttons. Three indicator lamps, a gold vent and two drawer pulls are its entire
+exterior, so the physical actions here are the ones the object actually affords — and everything
+else lives on the screen.
+
 | Control | What it does |
 | --- | --- |
-| The hood | Tap it to open the unit. The screen is on its inner face, as on the prop. |
-| The latch | The metal bar on the top edge of the case — opens and closes the hood. |
-| Eight mode keys | GEO, MET, BIO, EM, NAV, LOG, LIB, DIAG. Keyboard `1`–`8`. |
-| Watch-crowns | 1 scan/hold · 2 mark record · 3 mark beam-down point · 4 screen insert · 5 hand lamp · 6 optical sensor · 7 acoustic sensor · 8 position sensor. |
-| RANGE / GAIN | The two knurled knobs. Drag vertically; double-tap to centre. |
-| Hand scanner | In the lower compartment — tap the door, then the scanner, to start a biological scan. |
+| The screen | Tap it to magnify. The prop's screen is about a fifth of the front; magnified, it is readable, and the mode keys, RANGE, GAIN and the rest appear beneath it. |
+| Upper drawer | Slides open on the moiré and the data discs. |
+| Lower drawer | Slides open on the medical hand scanner; press the scanner to start a biological scan. |
+| Three lamps | Ivory: sensors live. Yellow: scan activity. Red: something worth your attention. |
+| Mode keys | GEO, MET, BIO, EM, NAV, LOG, LIB, DIAG — on the magnified screen, or keys `1`–`8`. |
+| RANGE / GAIN | Sliders on the magnified screen. |
+| SCAN / MARK | Hold the scan; write the current reading to the recorder. |
 | AUDIO / VOICE | Mute the synthesised warble; have the readout spoken aloud. |
-| RECORD | Start and stop a voice entry. |
-| LIBRARY / INFO | Query the local banks; read what every number means. |
-| Ticker | Tap it for the full recorder, with export and erase. |
+| RECORD / LIBRARY / INFO | Voice entry; query the local banks; read what every number means. |
+| Ticker | The narration line under the unit. Tap it for the full recorder, with export and erase. |
 
-Keyboard: `h` hood, `space` scan/hold, `m` mark a record, `esc` close a sheet.
+Keyboard: `1`–`8` modes, `z` magnify, `space` hold the scan, `m` mark a record, `esc` back.
 
 ## What each reading physically is
 
@@ -116,20 +120,28 @@ The prop debuted in "The Man Trap" in 1966. *Tricorder* is a three-function reco
 recording and computing — and its three default scan classes are geological, meteorological and
 biological, which is where GEO, MET and BIO come from.
 
-Details drawn from the original: the black case with its shoulder strap, the hood that pivots up
-with the screen on its inner face, the upper compartment with counter-rotating moiré discs, the
-lower compartment holding the detachable medical hand scanner, the three "hat pin" indicator
-lamps, the watch-crown buttons, the gold fabric behind the vent, and the interchangeable screen
-inserts — a plain blue-grey field for the science unit and a black one for the medical unit, which
-is why the ink on screen changes with the insert.
+The layout here is drawn from photographs of a screen-used unit rather than from replicas, and the
+proportions follow the hero prop's 5.5 × 7 × 1.75 inches. What that reference settles:
 
-The moiré discs are spirals rather than concentric rings, because concentric rings are
-rotationally symmetric and spinning them would show nothing at all.
+- **The screen is not hidden under a lid.** It sits in a brushed aluminium faceplate on the hood,
+  facing the operator, at the left. The gold woven vent is at the top right of that same plate, and
+  the three indicator lamps — yellow, dark red, ivory, each a bead on a short grey grommet — sit in
+  a row beneath the vent. A thick brushed hinge bar runs under the plate.
+- **The front of the case is two drawers**, nothing else: black faces, chrome pulls, a V-shaped cut
+  under the upper pull and a U under the lower, aluminium edging down both sides and rounded black
+  rails at the corners. There are no buttons, no knobs, no labels anywhere on the object.
+- **The moiré does not move.** This is the detail most recreations get wrong. The communicator's
+  disc is turned by a pocket-watch movement; the tricorder had no room for a drive behind the
+  panel, so its two moiré discs — cut from an Edmund Scientific sheet — are a still interference
+  figure, sitting behind the upper drawer with the data discs. It is static here too.
+- **Two straps**, one each side, not a single diagonal band.
 
-On screen the tricorder itself said almost nothing: a still, mostly blank field, because putting
-an image on it meant an extra plate shot. What made its data readable was the **dialogue** — the
-actor read the result aloud in a fixed grammar. That is reproduced literally here: every reading is
-also phrased as a sentence in the ticker beneath the device, and VOICE will speak it.
+On screen the tricorder itself said almost nothing: a still, mostly blank field, because putting an
+image on it meant an extra plate shot. What made its data readable was the **dialogue** — the actor
+read the result aloud in a fixed grammar. That is reproduced literally: every reading is also
+phrased as a sentence in the ticker beneath the unit, and VOICE will speak it. It is also why the
+unmagnified screen shows one headline reading rather than a dense panel; at the real screen's size,
+sparse is both accurate and legible.
 
 All artwork is drawn in code — CSS, SVG and canvas — and every sound is synthesised with Web Audio
 at runtime. No show assets are used.

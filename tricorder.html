@@ -57,261 +57,274 @@ body{
   background:radial-gradient(120% 90% at 50% 20%,#191713 0%,#050505 60%,#000 100%);
 }
 
-/* ---------- 2. STAGE + DEVICE SHELL ------------------------------ */
+/* ---------- 2. STAGE + THE UNIT ---------------------------------- */
+/* Proportions are taken from the screen-used prop: the hero tricorder
+   measures 5.5" wide x 7" tall x 1.75" deep, and the hood assembly is
+   roughly the top third of that height. Everything below is drawn to
+   those ratios. */
 #stage{
   position:relative;width:100%;height:100%;
   display:flex;align-items:center;justify-content:center;
-  align-items:flex-end;padding:6px 6px 86px;perspective:1500px;
+  padding:4px 4px 76px;
 }
 #device{
   position:relative;
-  width:min(96vw,420px);
-  height:min(100%,880px);
-  transform-style:preserve-3d;
-  transition:transform .5s cubic-bezier(.2,.7,.25,1);
-  /* bottom-anchored: the empty band above the case is exactly the room the
-     hood needs when it swings up, so nothing has to be translated. */
-  transform:scale(.985);
-}
-#device.open{transform:scale(1)}
-
-/* the shoulder strap runs behind the case, over the left shoulder */
-#strap{
-  position:absolute;left:-4%;top:-6%;width:34%;height:118%;
-  background:linear-gradient(100deg,var(--strap) 0%,var(--strap-hi) 45%,var(--strap) 70%,#1a120b 100%);
-  /* pushed back in 3D: inside a preserve-3d parent, painting order is by
-     depth, so without this the strap would cover the flipped-up hood. */
-  transform:rotate(-9deg) translateZ(-60px);border-radius:4px;
-  box-shadow:inset 0 0 12px #000, 0 6px 18px rgba(0,0,0,.7);
-  opacity:.95;
-}
-#strap::after{ /* stitching */
-  content:"";position:absolute;inset:6px 5px;border:1px dashed rgba(200,170,120,.25);border-radius:3px;
+  width:min(99vw,470px);
+  aspect-ratio:0.72;             /* the prop's own proportions        */
+  max-height:calc(100% - 6px);
+  filter:drop-shadow(0 22px 30px rgba(0,0,0,.75));
 }
 
-/* the case itself */
-#case{
-  position:absolute;left:7%;right:0;bottom:0;top:27%;
-  background:
-    linear-gradient(180deg,#1a1916 0%,var(--case) 22%,#0b0b09 100%);
-  border-radius:14px;
-  box-shadow:
-     inset 0 1px 0 var(--case-hi),
-     inset 0 -2px 6px #000,
-     0 22px 44px rgba(0,0,0,.8),
-     0 2px 0 #000;
-  border:1px solid #2b2925;
-  overflow:hidden;
+/* the two black straps, one each side, running up out of frame */
+.strap{
+  position:absolute;top:-46%;height:70%;width:5.2%;
+  background:linear-gradient(90deg,#050505,#1b1a18 42%,#282624 62%,#060606);
+  box-shadow:inset 0 0 6px rgba(0,0,0,.9);
+  border-radius:2px;
 }
-/* hammertone speckle, the way the prop's paint reads under key light */
-#case::before{
-  content:"";position:absolute;inset:0;opacity:.5;pointer-events:none;
-  background-image:
-    radial-gradient(circle at 20% 30%,rgba(255,255,255,.045) 0 1px,transparent 1px),
-    radial-gradient(circle at 70% 60%,rgba(255,255,255,.035) 0 1px,transparent 1px),
-    radial-gradient(circle at 45% 85%,rgba(255,255,255,.03) 0 1px,transparent 1px);
-  background-size:13px 13px,17px 17px,23px 23px;
+#strapL{left:1.5%;width:6%;transform:rotate(2deg)}
+#strapR{right:1.5%;width:6%;transform:rotate(-2deg)}
+/* the metal loops the straps hang from */
+.strap::after{
+  content:"";position:absolute;bottom:-7px;left:-40%;width:180%;height:14px;
+  border:2px solid #7c8085;border-radius:2px;background:#141412;
+  box-shadow:0 1px 3px rgba(0,0,0,.8);
 }
 
-/* ---------- 3. THE HOOD (pivots up; screen on its inner face) ---- */
+/* the rounded black side rails that stand proud of the front face */
+.rail{
+  position:absolute;top:24%;bottom:0;width:10.5%;
+  background:linear-gradient(90deg,#000 0%,#1e1d1a 42%,#2b2926 60%,#050504 100%);
+  box-shadow:inset 0 2px 6px rgba(255,255,255,.06), 0 3px 10px rgba(0,0,0,.8);
+}
+#railL{left:0;border-radius:16px 3px 5px 18px;
+  box-shadow:inset 2px 2px 5px rgba(255,255,255,.08), inset -3px 0 6px rgba(0,0,0,.9), 0 3px 10px rgba(0,0,0,.8)}
+#railR{right:0;border-radius:3px 16px 18px 5px;
+  box-shadow:inset -2px 2px 5px rgba(255,255,255,.08), inset 3px 0 6px rgba(0,0,0,.9), 0 3px 10px rgba(0,0,0,.8);
+  background:linear-gradient(270deg,#000 0%,#1e1d1a 42%,#2b2926 60%,#050504 100%)}
+
+/* ---------- 3. THE HOOD ------------------------------------------ */
+/* On the prop the screen is not hidden under a lid — it sits in a
+   brushed aluminium faceplate on the hood, facing the operator, with the
+   gold vent above the three indicator lamps to its right. */
 #hood{
-  position:absolute;left:7%;right:0;top:27%;height:27%;
-  transform-origin:50% 0%;
-  transform-style:preserve-3d;
-  transition:transform .65s cubic-bezier(.3,.75,.25,1);
-  transform:rotateX(0deg);
-  z-index:6;
+  position:absolute;left:1.5%;right:1.5%;top:0;height:26%;
+  background:linear-gradient(180deg,#232019 0%,#141310 42%,#0a0908 100%);
+  border-radius:12px 12px 3px 3px;
+  box-shadow:inset 0 1px 0 #3a362e, 0 4px 12px rgba(0,0,0,.7);
+  padding:4.5% 5.5% 0;
 }
-#device.open #hood{transform:rotateX(-168deg)}
-.hood-face{
-  position:absolute;inset:0;border-radius:12px 12px 6px 6px;
-  backface-visibility:hidden;overflow:hidden;
+#faceplate{
+  position:relative;width:100%;height:82%;
+  border-radius:3px;
+  background:
+    repeating-linear-gradient(92deg,rgba(255,255,255,.05) 0 1px,transparent 1px 3px),
+    linear-gradient(178deg,#b9bbb8 0%,#9a9c98 38%,#868884 72%,#6e706c 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55), inset 0 -2px 4px rgba(0,0,0,.35),
+             0 1px 3px rgba(0,0,0,.6);
 }
-/* outer: what you see with the tricorder shut */
-#hood-out{
-  background:linear-gradient(180deg,#232019 0%,#151310 40%,#0a0908 100%);
-  border:1px solid #33302a;
-  box-shadow:inset 0 1px 0 #3a362e, 0 6px 14px rgba(0,0,0,.7);
-  display:flex;align-items:center;justify-content:center;
-}
-#hood-out .plate{
-  width:74%;height:52%;border-radius:5px;
-  background:linear-gradient(160deg,var(--metal) 0%,var(--metal-dk) 55%,#3c4046 100%);
-  box-shadow:inset 0 0 0 1px #24262a, inset 0 2px 5px rgba(255,255,255,.25), 0 2px 6px #000;
-  display:flex;align-items:center;justify-content:center;
-  font-size:clamp(8px,2.1vw,12px);letter-spacing:.42em;color:#14161a;
-  text-shadow:0 1px 0 rgba(255,255,255,.3);
-}
-#hood-out .grip{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);
-  width:40%;height:5px;border-radius:3px;background:linear-gradient(90deg,#000,#3a352c,#000)}
-/* inner: the screen face, revealed when the hood is up */
-#hood-in{
-  transform:rotateX(180deg) translateZ(1px);
-  background:linear-gradient(180deg,#0d0c0a,#191713);
-  border:1px solid #34302a;
-  padding:5px;
-}
+/* the screen: a rounded-square 1960s tube window, left of the plate */
 #screen-bezel{
-  position:absolute;inset:5px;border-radius:6px;
-  background:#000;box-shadow:inset 0 0 0 2px #3b3730, inset 0 0 22px #000;
-  overflow:hidden;
+  position:absolute;left:4%;top:6%;width:53%;height:88%;
+  border-radius:13% / 17%;
+  background:#3f423e;overflow:hidden;
+  box-shadow:inset 0 3px 7px rgba(0,0,0,.85), inset 0 -1px 0 rgba(255,255,255,.25),
+             0 0 0 1px rgba(0,0,0,.35);
 }
 #screen{display:block;width:100%;height:100%}
-
-/* ---------- 4. UPPER FACE: lamps, vent, moiré window ------------- */
-#face{position:absolute;inset:0;padding:6.5% 5% 3%;display:flex;flex-direction:column;gap:2.2%}
-
-/* the hood latch. The flipped-up hood shows its backface, which cannot be
-   clicked, so the latch is the control that always works. */
-#latch{
-  position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:7;
-  width:34%;height:15px;border-radius:0 0 7px 7px;cursor:pointer;
-  background:linear-gradient(180deg,var(--metal) 0%,var(--metal-dk) 60%,#2f3238 100%);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 2px 5px rgba(0,0,0,.8);
-  display:flex;align-items:center;justify-content:center;
+/* the curved glass over it */
+#screen-bezel::after{
+  content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
+  background:linear-gradient(158deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,.07) 26%,
+             rgba(255,255,255,0) 46%,rgba(255,255,255,.05) 100%);
 }
-#latch span{display:block;width:46%;height:4px;border-radius:2px;
-  background:repeating-linear-gradient(90deg,#1c1e22 0 2px,#9aa0a8 2px 4px)}
-#latch:active{filter:brightness(1.25)}
-
-.rowA{display:flex;gap:3.5%;align-items:stretch;height:30%}
-
-/* the three hat-pin indicator lamps */
-#lamps{display:flex;flex-direction:column;justify-content:space-around;align-items:center;width:9%}
-.lamp{
-  width:86%;aspect-ratio:1;border-radius:50%;
-  background:radial-gradient(circle at 35% 30%,#2c2b25,#121210);
-  border:1px solid #46433a;
-  box-shadow:inset 0 2px 3px rgba(0,0,0,.9);
-  position:relative;transition:box-shadow .12s,background .12s;
-}
-.lamp::after{content:"";position:absolute;inset:20%;border-radius:50%;
-  background:color-mix(in srgb,var(--c) 22%,#1d1c19);transition:background .12s,box-shadow .12s}
-.lamp.on{box-shadow:inset 0 0 6px rgba(0,0,0,.6),0 0 14px var(--c),0 0 30px var(--c)}
-.lamp.on::after{background:var(--c);box-shadow:0 0 10px var(--c)}
-#lampR{--c:var(--lamp-red)} #lampA{--c:var(--lamp-amb)} #lampG{--c:var(--lamp-grn)}
-
-/* the moiré window — two counter-rotating printed discs */
-#moire-window{
-  position:relative;height:86%;aspect-ratio:1;align-self:center;border-radius:50%;
-  background:#000;overflow:hidden;
-  box-shadow:inset 0 0 0 3px #47433a, inset 0 0 18px #000, 0 2px 6px #000;
-}
-#moire-window svg{position:absolute;inset:0;width:100%;height:100%}
-#disc1{transform-origin:50% 50%;animation:spinCW 6s linear infinite}
-#disc2{transform-origin:50% 50%;animation:spinCCW 9s linear infinite}
-@keyframes spinCW{to{transform:rotate(360deg)}}
-@keyframes spinCCW{to{transform:rotate(-360deg)}}
-#moire-window::after{ /* glass */
-  content:"";position:absolute;inset:0;border-radius:50%;pointer-events:none;
-  background:linear-gradient(150deg,rgba(255,255,255,.20),transparent 45%);
+#screen-bezel.zoom-hint::before{
+  content:"";position:absolute;inset:0;border-radius:inherit;z-index:2;
+  box-shadow:inset 0 0 0 1px rgba(245,208,58,.28);
 }
 
-/* the square gold vent — fine gold fabric behind a grille */
+/* the gold woven vent, upper right of the plate */
 #vent{
-  width:22%;align-self:center;aspect-ratio:1;border-radius:3px;position:relative;overflow:hidden;
+  position:absolute;right:6%;top:6%;width:17%;height:44%;
   background:
-    repeating-linear-gradient(90deg,rgba(0,0,0,.62) 0 1px,transparent 1px 3px),
-    repeating-linear-gradient(0deg,rgba(0,0,0,.62) 0 1px,transparent 1px 3px),
-    linear-gradient(150deg,#b99a35,#8f7420 45%,#5d4a11 100%);
-  box-shadow:inset 0 0 0 2px #2c2a24, inset 0 0 14px rgba(0,0,0,.7);
-  filter:saturate(.85);
+    repeating-linear-gradient(90deg,rgba(60,40,10,.55) 0 1px,transparent 1px 3px),
+    repeating-linear-gradient(0deg,rgba(60,40,10,.55) 0 1px,transparent 1px 3px),
+    linear-gradient(150deg,#c8a35c,#a8853c 55%,#7d6026 100%);
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,.4), inset 0 0 6px rgba(0,0,0,.35);
 }
 
-/* ---------- 5. CONTROL PANEL ------------------------------------- */
-#panel{
-  background:linear-gradient(180deg,#222019,var(--panel));
-  border:1px solid #37342c;border-radius:8px;
-  box-shadow:inset 0 1px 0 #3d3930, 0 3px 8px rgba(0,0,0,.6);
-  padding:3.2% 3.6%;display:flex;flex-direction:column;gap:8px;
-  flex:1;justify-content:space-around;
+/* the three lamps: a coloured bead on a grey grommet, below the vent */
+#lamps{
+  position:absolute;right:4%;bottom:6%;width:31%;height:40%;
+  display:flex;align-items:flex-end;justify-content:space-between;
+}
+.lamp{position:relative;width:22%;height:100%}
+.lamp .grommet{
+  position:absolute;bottom:0;left:24%;width:52%;height:40%;border-radius:1px;
+  background:linear-gradient(180deg,#adafab,#74766f);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 1px 2px rgba(0,0,0,.5);
+}
+.lamp .bead{
+  position:absolute;bottom:34%;left:20%;width:60%;aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,rgba(255,255,255,.75),transparent 55%), var(--c);
+  box-shadow:0 1px 2px rgba(0,0,0,.6);
+  transition:box-shadow .12s,filter .12s;
+  filter:brightness(.62);
+}
+.lamp.on .bead{filter:brightness(1.35);box-shadow:0 0 8px var(--c),0 0 18px var(--c)}
+#lampA{--c:#e2c93f}   /* yellow  */
+#lampR{--c:#a3212a}   /* dark red */
+#lampG{--c:#e6e1d2}   /* ivory   */
+
+/* the brushed hinge bar that runs under the faceplate */
+#hingebar{
+  position:absolute;left:3%;right:3%;top:25.6%;height:4.2%;
+  background:
+    repeating-linear-gradient(93deg,rgba(255,255,255,.06) 0 1px,transparent 1px 4px),
+    linear-gradient(180deg,#a7a9a4 0%,#82847f 45%,#5d5f5a 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.5), 0 2px 5px rgba(0,0,0,.7);
+  border-radius:2px;z-index:4;
+}
+
+/* ---------- 4. THE TWO DRAWERS ----------------------------------- */
+#body{
+  position:absolute;left:7.5%;right:7.5%;top:30%;bottom:1%;
+  background:linear-gradient(180deg,#131210,#080807);
+  box-shadow:inset 0 0 0 1px #2a2825;
+  display:flex;flex-direction:column;
+}
+/* the bright aluminium edging that runs down both sides of the drawers */
+#body::before,#body::after{
+  content:"";position:absolute;top:0;bottom:0;width:3px;z-index:5;pointer-events:none;
+  background:linear-gradient(90deg,#6f716c,#b6b8b3 45%,#5a5c57);
+  box-shadow:0 0 3px rgba(0,0,0,.8);
+}
+#body::before{left:-3px}
+#body::after{right:-3px}
+.drawer{
+  position:relative;overflow:hidden;
+  background:linear-gradient(180deg,#151412 0%,#0c0b0a 55%,#060605 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05);
+  cursor:pointer;
+  transition:transform .42s cubic-bezier(.3,.8,.3,1);
+}
+#drawerUpper{flex:0 0 42%;border-bottom:2px solid #7f817c}
+#drawerLower{flex:1}
+/* the chrome pull, with its V or U indent below */
+.pull{
+  position:absolute;left:50%;top:20%;transform:translateX(-50%);
+  width:34%;height:11%;
+  background:linear-gradient(180deg,#d2d4d0,#9a9c97 55%,#6b6d68);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 2px 4px rgba(0,0,0,.8);
+  border-radius:2px 2px 40% 40% / 2px 2px 22% 22%;   /* the scalloped lip */
+}
+.indent{
+  position:absolute;left:50%;top:31%;transform:translateX(-50%);
+  width:27%;height:11%;
+  background:linear-gradient(180deg,#2a2825,#0a0a09);
+}
+#drawerUpper .indent{clip-path:polygon(0 0,100% 0,50% 100%)}         /* V */
+#drawerLower .indent{border-radius:0 0 60% 60%}                       /* U */
+/* the faint shading the prop's drawers carry under the pulls */
+#drawerUpper::after,#drawerLower::after{
+  content:"";position:absolute;left:50%;top:26%;transform:translateX(-50%);
+  width:62%;height:64%;pointer-events:none;
+  background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.05),transparent 62%);
+}
+
+/* what the drawers hold, revealed when they slide open */
+.drawer-inside{
+  position:absolute;left:0;right:0;top:0;bottom:0;overflow:hidden;
+  background:linear-gradient(180deg,#0a0a09,#040404);
+  box-shadow:inset 0 6px 12px rgba(0,0,0,.9);
+  display:flex;align-items:center;justify-content:center;gap:6%;
+  padding:6% 7%;
+}
+.drawer.open .drawer-face{transform:translateY(88%)}
+.drawer-face{
+  position:absolute;inset:0;z-index:2;
+  background:inherit;
+  transition:transform .42s cubic-bezier(.3,.8,.3,1);
+}
+
+/* the moiré: two printed patterns, one over the other. On the prop these
+   do NOT rotate — unlike the communicator there was no room behind the
+   panel for a drive, so the pattern is a still interference figure. */
+#moire{
+  position:relative;height:74%;aspect-ratio:1;border-radius:50%;
+  background:#000;overflow:hidden;flex:none;
+  box-shadow:inset 0 0 0 2px #4b4740, inset 0 0 12px #000;
+}
+#moire svg{position:absolute;inset:0;width:100%;height:100%}
+#discs{display:grid;grid-template-columns:1fr 1fr;gap:6px;height:74%}
+.data-disc{
+  height:100%;aspect-ratio:1;border-radius:50%;flex:none;min-height:0;
+  background:repeating-radial-gradient(circle,#dedac8 0 1px,#141412 1px 2px);
+  box-shadow:0 1px 3px #000, inset 0 0 0 1px #3a3730;
+}
+
+/* the detachable medical hand scanner, in the lower drawer */
+#scanner{
+  height:82%;aspect-ratio:.42;border-radius:3px 3px 5px 5px;flex:none;
+  background:linear-gradient(160deg,#cdd0d5,#84898f 45%,#41454a);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 3px 8px #000;
+  position:relative;cursor:pointer;transition:transform .25s,box-shadow .25s;
+}
+#scanner::before{
+  content:"";position:absolute;left:14%;right:14%;top:6%;height:30%;
+  background:repeating-linear-gradient(0deg,#2c2f33 0 2px,#b3b8bf 2px 4px);border-radius:2px;
+}
+#scanner::after{
+  content:"";position:absolute;left:28%;right:28%;bottom:10%;height:12%;
+  border-radius:2px;background:#1d1f22;box-shadow:inset 0 0 4px #000;
+}
+#scanner.active{box-shadow:inset 0 1px 0 rgba(255,255,255,.65),0 0 16px var(--lamp-grn),0 3px 8px #000}
+.drawer-label{
+  font-size:8px;letter-spacing:.24em;color:#6c6858;writing-mode:vertical-rl;
+  transform:rotate(180deg);
+}
+
+/* ---------- 5. THE SCREEN, MAGNIFIED ----------------------------- */
+/* The prop's screen is small — about a fifth of the front. Tapping it
+   magnifies the same rendering so the data can actually be read, which
+   is the one concession the object itself cannot make. */
+#zoom{
+  position:fixed;inset:0;z-index:30;display:none;
+  background:rgba(3,3,3,.94);
+  flex-direction:column;justify-content:center;gap:10px;
+  padding:10px 10px 86px;overflow:auto;
+}
+#zoom.show{display:flex}
+#zoom-screen-wrap{
+  flex:0 1 auto;margin:0 auto;width:100%;max-width:560px;
+  aspect-ratio:1.47;             /* the same window, only bigger */
+  border-radius:14px / 16px;overflow:hidden;position:relative;
+  background:#3f423e;box-shadow:inset 0 3px 10px rgba(0,0,0,.85), 0 0 0 3px #6e706c, 0 0 40px rgba(0,0,0,.9);
+}
+#zoom-screen{display:block;width:100%;height:100%}
+#zoom-controls{
+  flex:none;padding:8px 0 10px;display:flex;flex-direction:column;gap:7px;
+  max-width:560px;width:100%;margin:0 auto;
 }
 #modebar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .btn{
-  appearance:none;border:1px solid #4a463c;border-radius:4px;
-  background:linear-gradient(180deg,#3a352c,#211f1a);
+  appearance:none;border:1px solid #4a463c;border-radius:3px;
+  background:linear-gradient(180deg,#26241e,#141310);
   color:#cfc9b4;font:inherit;text-transform:uppercase;
-  font-size:clamp(8px,2.2vw,11px);letter-spacing:.16em;
-  padding:9px 2px;cursor:pointer;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 2px 3px rgba(0,0,0,.6);
-  transition:transform .06s,background .12s,color .12s,box-shadow .12s;
+  font-size:clamp(9px,2.4vw,12px);letter-spacing:.18em;
+  padding:11px 2px;cursor:pointer;
 }
-.btn:active{transform:translateY(1px);box-shadow:inset 0 2px 4px rgba(0,0,0,.7)}
-.btn.sel{
-  background:linear-gradient(180deg,#c9a227,#8a6f18);color:#140f02;
-  border-color:#e6c657;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 12px rgba(201,162,39,.45);
-}
-
-/* the row of small watch-crown buttons + two knurled knobs */
-.rowB{display:flex;align-items:center;gap:10px}
-#crowns{display:flex;gap:5px;flex:1}
-.crown{
-  flex:1;height:16px;border-radius:3px;
-  background:
-    repeating-linear-gradient(90deg,#9aa0a8 0 1px,#5c6067 1px 2px),
-    linear-gradient(180deg,#b7bcc3,#4d5158);
-  border:1px solid #2c2f34;box-shadow:0 1px 2px #000, inset 0 1px 0 rgba(255,255,255,.5);
-  cursor:pointer;transition:transform .06s,filter .12s;
-}
-.crown:active{transform:translateY(1px)}
-.crown.lit{filter:brightness(1.5) sepia(.6) hue-rotate(-15deg) saturate(3)}
-
-.knob{
-  width:46px;height:46px;border-radius:50%;position:relative;cursor:grab;flex:none;
-  background:
-    repeating-conic-gradient(from 0deg,#8c9099 0 3deg,#3f4349 3deg 6deg),
-    radial-gradient(circle,#6e727a,#2a2d31);
-  box-shadow:inset 0 0 0 3px #23262a, inset 0 3px 6px rgba(255,255,255,.28), 0 3px 6px #000;
-  touch-action:none;
-}
-.knob::after{
-  content:"";position:absolute;left:50%;top:8%;width:3px;height:34%;
-  background:#f0ece0;transform:translateX(-50%);border-radius:2px;box-shadow:0 0 4px #000;
-}
-.knob-wrap{display:flex;flex-direction:column;align-items:center;gap:3px}
-.knob-lab{font-size:8px;letter-spacing:.2em;color:#8d8875}
-
-/* ---------- 6. COMPARTMENTS -------------------------------------- */
-.comp{
-  border:1px solid #37342c;border-radius:8px;overflow:hidden;position:relative;
-  background:linear-gradient(180deg,#1a1814,#0c0b09);
-  box-shadow:inset 0 1px 0 #3a362e,0 3px 8px rgba(0,0,0,.6);
-}
-#comp-lower{flex:0 0 20%;min-height:66px;display:flex;align-items:center;justify-content:flex-start;padding:8px 14px}
-.comp-door{
-  position:absolute;inset:0;z-index:3;cursor:pointer;
-  background:linear-gradient(180deg,#232019,#121110 60%,#0a0908);
-  border-bottom:1px solid #3a362e;
-  transform-origin:50% 100%;transition:transform .5s cubic-bezier(.3,.8,.3,1);
-  display:flex;align-items:center;justify-content:center;
-  font-size:9px;letter-spacing:.3em;color:#6e6a5c;
-}
-.comp.open .comp-door{transform:rotateX(-105deg)}
-
-/* the detachable medical hand scanner ("salt shaker") */
-#scanner{
-  height:84%;aspect-ratio:.62;border-radius:5px 5px 8px 8px;
-  background:linear-gradient(160deg,#c9ccd2,#7e838b 45%,#3d4147);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 3px 8px #000;
-  position:relative;cursor:pointer;transition:transform .25s;
-}
-#scanner:active{transform:scale(.96)}
-#scanner::before{ /* the grooved head */
-  content:"";position:absolute;left:12%;right:12%;top:8%;height:26%;
-  background:repeating-linear-gradient(0deg,#2c2f33 0 2px,#aab0b7 2px 4px);border-radius:3px;
-}
-#scanner::after{content:"";position:absolute;left:26%;right:26%;bottom:12%;height:14%;
-  border-radius:3px;background:#1d1f22;box-shadow:inset 0 0 4px #000}
-#scanner.active{animation:scanPulse .55s ease-in-out infinite alternate}
-@keyframes scanPulse{to{box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 0 18px var(--lamp-grn),0 3px 8px #000}}
-#disc-rack{display:flex;gap:5px;align-items:center}
-.mini-disc{width:16px;height:16px;border-radius:50%;background:
-  repeating-radial-gradient(circle,#e8e4d4 0 1px,#111 1px 2px);box-shadow:0 1px 3px #000}
+.btn.sel{background:linear-gradient(180deg,#c9a227,#8a6f18);color:#140f02;border-color:#e6c657}
+#utilrow{display:flex;gap:6px;justify-content:space-between;flex-wrap:wrap}
+.chip{border:1px solid #3a362e;border-radius:3px;padding:7px 9px;background:#16150f;
+  cursor:pointer;color:#a8a291;font-size:9px;letter-spacing:.18em;flex:1;text-align:center}
+.chip.on{color:#140f02;background:var(--ink-amber);border-color:#e6c657}
+.slider{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.18em;color:#8d8875}
+.slider input{flex:1;accent-color:#c9a227}
 
 /* ---------- 7. READOUT TICKER (how TOS made data readable) ------- */
 #ticker{
-  position:fixed;left:0;right:0;bottom:0;z-index:8;
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
   background:linear-gradient(180deg,rgba(6,6,5,.92),rgba(0,0,0,.98));
   border-top:1px solid #35322b;padding:8px 12px;cursor:pointer;
   font-size:clamp(9px,2.4vw,12px);line-height:1.45;letter-spacing:.1em;
@@ -369,84 +382,83 @@ body{
 
 <div id="stage">
   <div id="device">
-    <div id="strap" aria-hidden="true"></div>
+    <!-- the two shoulder straps -->
+    <div class="strap" id="strapL" aria-hidden="true"></div>
+    <div class="strap" id="strapR" aria-hidden="true"></div>
 
-    <!-- ============ HOOD: pivots up, screen on the inner face ====== -->
+    <!-- ============ HOOD: aluminium faceplate, screen at the left,
+         gold vent top right, three lamps beneath it ================= -->
     <div id="hood">
-      <div class="hood-face" id="hood-out">
-        <div class="plate">STARFLEET</div>
-        <div class="grip"></div>
-      </div>
-      <div class="hood-face" id="hood-in">
-        <div id="screen-bezel"><canvas id="screen"></canvas></div>
+      <div id="faceplate">
+        <div id="screen-bezel" title="Tap to magnify the screen">
+          <canvas id="screen"></canvas>
+        </div>
+        <div id="vent" aria-hidden="true"></div>
+        <div id="lamps" aria-hidden="true">
+          <div class="lamp" id="lampA"><div class="bead"></div><div class="grommet"></div></div>
+          <div class="lamp" id="lampR"><div class="bead"></div><div class="grommet"></div></div>
+          <div class="lamp" id="lampG"><div class="bead"></div><div class="grommet"></div></div>
+        </div>
       </div>
     </div>
+    <div id="hingebar" aria-hidden="true"></div>
 
-    <!-- ============ CASE ========================================== -->
-    <div id="case">
-      <div id="latch" title="Hood latch — open / close"><span></span></div>
-      <div id="face">
+    <!-- ============ THE CASE: side rails and two drawers =========== -->
+    <div class="rail" id="railL" aria-hidden="true"></div>
+    <div class="rail" id="railR" aria-hidden="true"></div>
 
-        <div class="rowA">
-          <div id="lamps">
-            <div class="lamp" id="lampR"></div>
-            <div class="lamp" id="lampA"></div>
-            <div class="lamp" id="lampG"></div>
+    <div id="body">
+      <!-- upper drawer: the moiré and the data discs live behind it -->
+      <div class="drawer" id="drawerUpper" title="Upper drawer — moiré and data discs">
+        <div class="drawer-inside">
+          <div id="moire" aria-hidden="true">
+            <svg viewBox="0 0 100 100"><g id="disc1"></g><g id="disc2"></g></svg>
           </div>
-
-          <div id="comp-upper" class="comp open" style="flex:1;display:flex;align-items:center;justify-content:center">
-            <div id="moire-window" title="Moiré discs">
-              <svg viewBox="0 0 100 100" aria-hidden="true">
-                <defs>
-                  <!-- disc 1: fine concentric rings -->
-                  <radialGradient id="ringFade"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#fff"/></radialGradient>
-                </defs>
-                <g id="disc1"></g>
-                <g id="disc2"></g>
-              </svg>
-            </div>
+          <div id="discs" aria-hidden="true">
+            <div class="data-disc"></div><div class="data-disc"></div>
+            <div class="data-disc"></div><div class="data-disc"></div>
           </div>
-
-          <div id="vent"></div>
+          <div class="drawer-label">DATA</div>
         </div>
-
-        <!-- ============ CONTROL PANEL ============================== -->
-        <div id="panel">
-          <div id="modebar"></div>
-          <div class="rowB">
-            <div id="crowns"></div>
-            <div class="knob-wrap">
-              <div class="knob" id="knobRange" title="Range"></div>
-              <div class="knob-lab">RANGE</div>
-            </div>
-            <div class="knob-wrap">
-              <div class="knob" id="knobGain" title="Gain"></div>
-              <div class="knob-lab">GAIN</div>
-            </div>
-          </div>
-          <div id="utilrow">
-            <span class="chip" id="chipSound">AUDIO</span>
-            <span class="chip" id="chipVoice">VOICE</span>
-            <span class="chip" id="chipRec">RECORD</span>
-            <span class="chip" id="chipLib">LIBRARY</span>
-            <span class="chip" id="chipInfo">INFO</span>
-          </div>
+        <div class="drawer-face">
+          <div class="pull"></div><div class="indent"></div>
         </div>
+      </div>
 
-        <!-- ============ LOWER COMPARTMENT ========================== -->
-        <div id="comp-lower" class="comp">
-          <div class="comp-door" id="doorLower">LOWER COMPARTMENT</div>
+      <!-- lower drawer: the detachable medical hand scanner -->
+      <div class="drawer" id="drawerLower" title="Lower drawer — medical hand scanner">
+        <div class="drawer-inside">
           <div id="scanner" title="Medical hand scanner"></div>
-          <div id="disc-rack" style="margin-left:14px">
-            <div class="mini-disc"></div><div class="mini-disc"></div>
-            <div class="mini-disc"></div><div class="mini-disc"></div>
-          </div>
+          <div class="drawer-label">SCANNER</div>
         </div>
+        <div class="drawer-face">
+          <div class="pull"></div><div class="indent"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-      </div><!-- /face -->
-    </div><!-- /case -->
+<!-- the readout, which is where TOS actually put the data: in dialogue -->
+<div id="ticker"><span class="who">SENSOR READOUT</span><br><span id="tickerText">STANDING BY.</span></div>
 
-    <div id="ticker"><span class="who">SENSOR READOUT</span><br><span id="tickerText">STANDING BY.</span></div>
+<!-- the screen, magnified, with the controls the prop itself never had -->
+<div id="zoom">
+  <div id="zoom-screen-wrap"><canvas id="zoom-screen"></canvas></div>
+  <div id="zoom-controls">
+    <div id="modebar"></div>
+    <div class="slider"><span>RANGE</span><input type="range" id="rangeCtl" min="0" max="100" value="50"></div>
+    <div class="slider"><span>GAIN</span><input type="range" id="gainCtl" min="0" max="100" value="50"></div>
+    <div id="utilrow">
+      <span class="chip" id="chipScan">SCAN</span>
+      <span class="chip" id="chipMark">MARK</span>
+      <span class="chip" id="chipSound">AUDIO</span>
+      <span class="chip" id="chipVoice">VOICE</span>
+      <span class="chip" id="chipRec">RECORD</span>
+      <span class="chip" id="chipLib">LIBRARY</span>
+      <span class="chip" id="chipInfo">INFO</span>
+      <span class="chip" id="chipClose">CLOSE</span>
+    </div>
   </div>
 </div>
 
@@ -648,8 +660,13 @@ const Audio_ = {
 const SCR = {
   cv:null, g:null, W:0, H:0, dpr:1, grain:null,
   init(){
-    this.cv=$("#screen"); this.g=this.cv.getContext("2d");
-    this.resize(); addEventListener("resize",()=>this.resize());
+    this.use($("#screen"));
+    addEventListener("resize",()=>this.resize());
+  },
+  /* the same renderer drives the prop's small screen and the magnified
+     one; only the visible canvas is drawn each frame */
+  use(cv){
+    this.cv=cv; this.g=cv.getContext("2d"); this.grain=null; this.resize();
   },
   resize(){
     /* offsetWidth, not getBoundingClientRect: the hood is 3D-rotated and
@@ -678,7 +695,7 @@ const SCR = {
     g.font=(o.weight||700)+" "+size+"px "+getComputedStyle(document.body).fontFamily;
     g.fillStyle=o.color||"#ecead9";
     g.textAlign=o.align||"left"; g.textBaseline=o.baseline||"alphabetic";
-    const str=String(s).toUpperCase();
+    const str=o.raw? String(s) : String(s).toUpperCase();
     const sp=o.spacing==null?1.6:o.spacing;
     if(sp<=0){ g.fillText(str,x,y); g.restore(); return g.measureText(str).width; }
     /* manual letter-spacing: canvas has no letterSpacing everywhere */
@@ -740,7 +757,7 @@ const SCR = {
   bigNum(x,y,val,unit,color,size){
     const s=size||34;
     const wv=this.text(x,y,val,{size:s,color:color||"#ecead9",spacing:2.2});
-    if(unit) this.text(x+wv+6,y,unit,{size:s*0.34,color:color||"#ecead9",spacing:1.6});
+    if(unit) this.text(x+wv+6,y,unit,{size:s*0.34,color:color||"#ecead9",spacing:1.6,raw:true});
     return wv;
   },
   /* the radial sweep that says "I am scanning" */
@@ -1236,7 +1253,7 @@ const APP = {
   range:0.5, gain:0.5,          /* the two knurled knobs                 */
   insert:0,                      /* which screen insert is fitted        */
   waypoint:null,                 /* stored beam-down point               */
-  t0:nowMs(), alert:false, intensity:0
+  t0:nowMs(), alert:false, intensity:0, zoom:false
 };
 const INSERTS=["science","medical","data"];
 const C=SCR;
@@ -1299,6 +1316,8 @@ const MODES={
 
 /* ---- GEOLOGICAL --------------------------------------------------- */
 GEO:{ label:"GEO", who:"GEOLOGICAL SCAN", screen:"science", needs:["motion","mag"],
+  brief(){ const m=SENSORS.state.mag;
+    return {v:m.ok?fmt(m.mag,1):"—", u:"µT", l:"MAG FLUX", ring:m.ok?m.ring:null, c:"#f5d03a"}; },
   draw(t){
     const s=SENSORS.state, W=C.W, H=C.H;
     header("GEOLOGICAL","RNG "+Math.round(APP.range*100)+" / GAIN "+Math.round(APP.gain*100));
@@ -1351,6 +1370,9 @@ GEO:{ label:"GEO", who:"GEOLOGICAL SCAN", screen:"science", needs:["motion","mag
 
 /* ---- METEOROLOGICAL ----------------------------------------------- */
 MET:{ label:"MET", who:"METEOROLOGICAL SCAN", screen:"science", needs:["light","camera"],
+  brief(){ const l=SENSORS.state.light, cam=SENSORS.state.camera;
+    const lux = l.lux!=null? l.lux : (cam.ok? Math.pow(cam.lum/255,2.2)*1100 : null);
+    return {v:lux!=null?String(Math.round(lux)):"—", u:"LUX", l:"ILLUMINATION", ring:l.ring, c:"#f5d03a"}; },
   draw(t){
     const s=SENSORS.state, W=C.W, H=C.H, l=s.light, cam=s.camera, a=s.audio;
     header("METEOROLOGICAL");
@@ -1398,6 +1420,8 @@ MET:{ label:"MET", who:"METEOROLOGICAL SCAN", screen:"science", needs:["light","
 
 /* ---- BIOLOGICAL / MEDICAL ----------------------------------------- */
 BIO:{ label:"BIO", who:"DR. McCOY — MEDICAL SCAN", screen:"medical", needs:["camera"],
+  brief(){ const c=SENSORS.state.camera;
+    return {v:c.bpm?String(Math.round(c.bpm)):"—", u:"BPM", l:"CARDIAC", ring:c.ok?c.ppg:null, c:"#58e08a"}; },
   draw(t){
     const s=SENSORS.state, W=C.W, H=C.H, cam=s.camera, mo=s.motion;
     header("BIOLOGICAL","MEDICAL INSERT");
@@ -1447,6 +1471,8 @@ BIO:{ label:"BIO", who:"DR. McCOY — MEDICAL SCAN", screen:"medical", needs:["c
 
 /* ---- ENERGY / EM SPECTRUM ----------------------------------------- */
 EM:{ label:"EM", who:"ENERGY SPECTRUM", screen:"data", needs:["audio"],
+  brief(){ const a=SENSORS.state.audio;
+    return {v:a.ok?fmt(a.peakHz,0):"—", u:"HZ", l:"PEAK EMISSION", ring:a.ok?a.ring:null, c:"#f5d03a"}; },
   draw(t){
     const s=SENSORS.state, W=C.W, H=C.H, a=s.audio, cam=s.camera;
     header("ENERGY SPECTRUM","GAIN "+Math.round(APP.gain*100));
@@ -1492,6 +1518,10 @@ EM:{ label:"EM", who:"ENERGY SPECTRUM", screen:"data", needs:["audio"],
 
 /* ---- NAVIGATION / POSITION ---------------------------------------- */
 NAV:{ label:"NAV", who:"POSITIONAL FIX", screen:"science", needs:["geo"],
+  brief(){ const g=SENSORS.state.geo;
+    if(g.lat!=null&&APP.waypoint){ const d=haversine(g,APP.waypoint);
+      return {v:d>1200?fmt(d/1000,2):fmt(d,0), u:d>1200?"KM":"M", l:"TO BEAM-DOWN PT", c:"#63b8ff"}; }
+    return {v:g.acc!=null?fmt(g.acc,0):"—", u:"M", l:"FIX ACCURACY", c:"#63b8ff"}; },
   draw(t){
     const s=SENSORS.state, W=C.W, H=C.H, g=s.geo, o=s.orient;
     header("POSITIONAL FIX", g.fix? "FIX "+clockStr(new Date(g.fix)) : "NO FIX");
@@ -1561,6 +1591,7 @@ NAV:{ label:"NAV", who:"POSITIONAL FIX", screen:"science", needs:["geo"],
 /* ---- RECORD / PLAYBACK -------------------------------------------- */
 LOG:{ label:"LOG", who:"RECORDER PLAYBACK", screen:"data", needs:[],
   entries:[], loaded:false,
+  brief(){ return {v:String(this.entries.length), u:"", l:"RECORDS", c:"#f5d03a"}; },
   draw(t){
     const W=C.W,H=C.H;
     header("RECORDER", this.entries.length+" ENTRIES");
@@ -1591,6 +1622,8 @@ LOG:{ label:"LOG", who:"RECORDER PLAYBACK", screen:"data", needs:[],
 
 /* ---- LIBRARY COMPUTER --------------------------------------------- */
 LIB:{ label:"LIB", who:"LIBRARY COMPUTER", screen:"data", needs:[],
+  brief(){ return {v:String(LIB.planets.length+LIB.minerals.length+LIB.medical.length+LIB.glossary.length),
+    u:"", l:"LIBRARY ENTRIES", c:"#f5d03a"}; },
   draw(t){
     const W=C.W,H=C.H;
     header("LIBRARY COMPUTER","LOCAL BANKS");
@@ -1614,6 +1647,9 @@ LIB:{ label:"LIB", who:"LIBRARY COMPUTER", screen:"data", needs:[],
 
 /* ---- SELF-DIAGNOSTIC ---------------------------------------------- */
 DIAG:{ label:"DIAG", who:"UNIT DIAGNOSTIC", screen:"data", needs:[],
+  brief(){ const s=SENSORS.state;
+    const n=["motion","orient","mag","geo","light","audio","camera","power"].filter(k=>s[k].ok).length;
+    return {v:n+"/8", u:"", l:"SENSORS LIVE", c:n>3?"#58e08a":"#e2483d"}; },
   draw(t){
     const s=SENSORS.state,W=C.W,H=C.H;
     header("UNIT DIAGNOSTIC");
@@ -1648,51 +1684,33 @@ DIAG:{ label:"DIAG", who:"UNIT DIAGNOSTIC", screen:"data", needs:[],
 const MODE_ORDER=["GEO","MET","BIO","EM","NAV","LOG","LIB","DIAG"];
 
 /* =====================================================================
-   H. THE MOIRÉ DISCS — Wah Chang's trick: two printed discs of fine
-   concentric rings, offset and counter-rotating. Where the rings cross,
-   an interference pattern crawls across the window. On the prop it is
-   the whole "it is working" language of the device, so here its speed is
-   driven by live scan intensity rather than being decorative.
+   H. THE MOIRÉ — Wah Chang cut two discs from an Edmund Scientific moiré
+   sheet and stacked them behind the upper drawer. Note what it does NOT
+   do: unlike the communicator, whose disc is turned by a pocket-watch
+   movement, the tricorder's moiré never rotated — there was no room for
+   a drive behind the panel. So this is a still interference figure, and
+   the fringes come from the offset between the two printings.
    ===================================================================== */
 function buildMoire(){
-  /* Concentric rings would be rotationally symmetric — spinning them
-     would show nothing at all. The pattern only crawls if the printing
-     is chiral, so each disc is an Archimedean spiral of slightly
-     different pitch, wound in opposite directions. */
-  const spiral=(turns,handed)=>{
-    const a=52/(turns*Math.PI*2); let d="", first=true;
-    for(let th=0; th<turns*Math.PI*2; th+=0.10){
-      const r=a*th, x=50+Math.cos(th*handed)*r, y=50+Math.sin(th*handed)*r;
-      d+=(first?"M":"L")+x.toFixed(2)+" "+y.toFixed(2); first=false;
-    }
+  const rings=(cx,step,color,w)=>{
+    let d="";
+    for(let r=step;r<=64;r+=step)
+      d+='<circle cx="'+cx+'" cy="50" r="'+r.toFixed(2)+'" fill="none" stroke="'+color+'" stroke-width="'+w+'"/>';
     return d;
   };
   const g1=$("#disc1"), g2=$("#disc2");
-  if(g1) g1.innerHTML='<path d="'+spiral(21,1)+'" fill="none" stroke="#efe9d6" stroke-width="1.15" stroke-linecap="round"/>';
-  if(g2) g2.innerHTML='<path d="'+spiral(24,-1)+'" fill="none" stroke="#b9b4a2" stroke-width="1.05" stroke-linecap="round"/>'+
-                      '<circle cx="50" cy="50" r="3" fill="#0a0a09"/>';
+  if(g1) g1.innerHTML=rings(38,1.55,"#efeada",0.62);
+  if(g2) g2.innerHTML=rings(62,1.55,"#efeada",0.62);
 }
 
 /* =====================================================================
-   I. INTERFACE — buttons, watch-crowns, knurled knobs, compartments.
+   I. INTERFACE — the prop carries no buttons at all: three indicator
+   lamps, two drawer pulls, and that is the whole exterior. So the
+   physical actions here are the ones the object really affords — open a
+   drawer, take out the hand scanner — and everything else lives on the
+   screen, magnified, where a 1966 tricorder would have shown graphics.
    ===================================================================== */
-const UI = {
-  crowns:[
-    {name:"SCAN / HOLD",       fn(){ APP.scanning=!APP.scanning; flash(APP.scanning?"SCANNING":"SCAN HOLD"); }},
-    {name:"MARK RECORD",       fn(){ recordScan(); }},
-    {name:"MARK BEAM-DOWN PT", fn(){
-        const g=SENSORS.state.geo;
-        if(g.lat==null){ flash("NO POSITIONAL FIX TO MARK"); return; }
-        APP.waypoint={lat:g.lat,lon:g.lon};
-        LOG.add({mode:"NAV",kind:"waypoint",text:"BEAM-DOWN POINT MARKED "+fmt(g.lat,5)+", "+fmt(g.lon,5)});
-        flash("BEAM-DOWN POINT MARKED");
-      }},
-    {name:"SCREEN INSERT",     fn(){ APP.insert=(APP.insert+1)%INSERTS.length; flash("SCREEN INSERT: "+INSERTS[APP.insert].toUpperCase()); }},
-    {name:"HAND LAMP",         fn(){ toggleTorch(); }},
-    {name:"OPTICAL SENSOR",    fn(){ toggleCamera(); }},
-    {name:"ACOUSTIC SENSOR",   fn(){ toggleAudioSensor(); }},
-    {name:"POSITION SENSOR",   fn(){ SENSORS.startGeo(); flash("POSITION SENSOR ENGAGED"); }}
-  ],
+const APP_CONTROLS = {
   build(){
     const bar=$("#modebar");
     MODE_ORDER.forEach(id=>{
@@ -1701,37 +1719,8 @@ const UI = {
       b.addEventListener("click",()=>setMode(id));
       bar.appendChild(b);
     });
-    const cr=$("#crowns");
-    this.crowns.forEach((c,i)=>{
-      const d=document.createElement("div");
-      d.className="crown"; d.title=(i+1)+" — "+c.name;
-      d.addEventListener("click",()=>{
-        Audio_.click(); d.classList.add("lit"); setTimeout(()=>d.classList.remove("lit"),220);
-        c.fn();
-      });
-      cr.appendChild(d);
-    });
-    this.knob($("#knobRange"),v=>{APP.range=v;},()=>APP.range);
-    this.knob($("#knobGain"), v=>{APP.gain=v;}, ()=>APP.gain);
-    this.paintKnobs();
-  },
-  knob(el,set,get){
-    let dragging=false, startY=0, startV=0;
-    const down=e=>{ dragging=true; startY=(e.touches?e.touches[0].clientY:e.clientY); startV=get(); el.setPointerCapture&&e.pointerId!=null&&el.setPointerCapture(e.pointerId); };
-    const move=e=>{
-      if(!dragging) return;
-      const y=(e.touches?e.touches[0].clientY:e.clientY);
-      set(clamp(startV+(startY-y)/160,0,1));
-      UI.paintKnobs(); e.preventDefault();
-    };
-    const up=()=>{ if(dragging){ dragging=false; Audio_.click(); } };
-    el.addEventListener("pointerdown",down); addEventListener("pointermove",move,{passive:false}); addEventListener("pointerup",up);
-    el.addEventListener("touchstart",down,{passive:true}); addEventListener("touchmove",move,{passive:false}); addEventListener("touchend",up);
-    el.addEventListener("dblclick",()=>{ set(0.5); UI.paintKnobs(); });
-  },
-  paintKnobs(){
-    $("#knobRange").style.transform="rotate("+lerp(-140,140,APP.range)+"deg)";
-    $("#knobGain").style.transform ="rotate("+lerp(-140,140,APP.gain )+"deg)";
+    $("#rangeCtl").addEventListener("input",e=>{ APP.range=e.target.value/100; });
+    $("#gainCtl").addEventListener("input",e=>{ APP.gain =e.target.value/100; });
   }
 };
 
@@ -1748,8 +1737,16 @@ function setMode(id){
   if(id==="NAV" && SENSORS.state.geo.lat==null) SENSORS.startGeo();
   if(id==="MET"){ SENSORS.startLight(); }
   if(id==="LOG"){ MODES.LOG.loaded=false; }
-  /* the screen insert follows the mode, as the production ones did */
   APP.insert = MODES[id].screen==="medical"?1 : MODES[id].screen==="data"?2 : 0;
+}
+
+/* the screen is a fifth of the front on the real object, so it can be
+   magnified — the one thing the prop cannot do for you */
+function setZoom(on){
+  APP.zoom=on;
+  $("#zoom").classList.toggle("show",on);
+  SCR.use(on? $("#zoom-screen") : $("#screen"));
+  Audio_.click();
 }
 
 async function toggleCamera(force){
@@ -1763,7 +1760,7 @@ async function toggleCamera(force){
 async function toggleTorch(){
   const s=SENSORS.state.camera;
   if(!s.ok){ await toggleCamera(true); }
-  if(!s.track) { flash("NO LAMP AVAILABLE"); return; }
+  if(!s.track){ flash("NO LAMP AVAILABLE"); return; }
   try{
     const caps=s.track.getCapabilities?s.track.getCapabilities():{};
     if(!caps.torch){ flash("THIS HULL HAS NO CONTROLLABLE LAMP"); return; }
@@ -1783,9 +1780,8 @@ async function toggleAudioSensor(force){
 /* ---- writing a record: the "corder" half of the name --------------- */
 function recordScan(){
   const m=MODES[APP.mode];
-  const rec={mode:APP.mode,kind:"scan",text:m.readout(),
-             data:snapshot()};
-  LOG.add(rec).then(()=>{ MODES.LOG.loaded=false; });
+  LOG.add({mode:APP.mode,kind:"scan",text:m.readout(),data:snapshot()})
+     .then(()=>{ MODES.LOG.loaded=false; });
   Audio_.blip(1600,0.09,"square",0.4);
   flash("RECORDED — STARDATE "+stardate());
 }
@@ -1862,11 +1858,12 @@ function openInfo(){
    'sensor, recorder and computer in one case. Every reading below comes from this device\'s own hardware. '+
    'Nothing is uploaded, nothing is fetched, and it runs with the network switched off.</p>'+
    '<h3>Controls</h3>'+
-   '<p>Tap the hood to open and close the unit. The eight mode keys select the scan class. '+
-   'The row of watch-crowns are, left to right: '+
-   UI.crowns.map((c,i)=>(i+1)+" "+c.name).join(" · ")+'. '+
-   'The two knurled knobs are RANGE and GAIN — drag them vertically, double-tap to centre. '+
-   'The lower compartment holds the medical hand scanner; press it to begin a biological scan.</p>'+
+   '<p>The prop has no buttons: three indicator lamps, a gold vent, and two drawer pulls are the '+
+   'whole exterior. So the physical actions here are the ones the object really affords — pull the '+
+   'upper drawer for the moiré and the data discs, pull the lower drawer for the medical hand '+
+   'scanner and press it to start a biological scan. Everything else is on the screen: tap the '+
+   'screen to magnify it, and the mode keys, RANGE, GAIN and the rest appear beneath it. '+
+   'Keyboard: 1-8 select a scan class, space holds the scan, M marks a record, Z magnifies.</p>'+
    '<h3>What the readings actually are</h3><table style="font-size:11px">'+
    row("GEO","Magnetometer field strength in microtesla plus a baseline delta (a real metal detector), device gravity vector, tilt, and an FFT of the accelerometer for vibration.")+
    row("MET","Ambient light sensor where the browser has one, otherwise a camera luminance estimate; colour temperature from the camera\'s R:B ratio; sound pressure from the microphone.")+
@@ -1914,6 +1911,25 @@ function openLogDetail(){
   });
 }
 
+
+/* the sparse readout the small screen shows */
+function drawBrief(m,t){
+  const W=C.W,H=C.H,k=IK(),b=m.brief();
+  /* the screen aperture is a rounded square with a generous radius, so
+     everything is kept inside a safe inset rather than the flat margin */
+  const px=Math.max(P,W*0.09), py=Math.max(4,H*0.10);
+  C.text(px,py+7,m.label,{size:8.5,color:k.fg,spacing:1.8});
+  C.text(W-px,py+7,APP.scanning?"SCAN":"HOLD",
+    {size:8,color:APP.scanning?k.dim:"#e2483d",align:"right",spacing:1.2});
+  C.rule(px,py+11,W-px,py+11,k.rule,1);
+  const big=Math.min(26,H*0.30);
+  const wv=C.text(px,py+13+big,b.v,{size:big,color:b.c,spacing:1.4});
+  if(b.u) C.text(px+wv+4,py+13+big,b.u,{size:big*0.38,color:b.c,spacing:1.1,raw:true});
+  C.text(px,H-py-2,b.l,{size:8,color:k.dim,spacing:1.5});
+  if(b.ring && b.ring.len>4)
+    C.trace(W*0.54,py+14,W*0.46-px,H*0.44,b.ring,b.c,{glow:true,width:1.4});
+}
+
 /* =====================================================================
    K. MAIN LOOP — sample, draw, narrate, and let the hardware state drive
    the lamps, the moiré speed and the pitch of the warble.
@@ -1931,7 +1947,12 @@ function frame(){
   }
   const m=MODES[APP.mode];
   C.field(INSERTS[APP.insert]);
-  try{ m.draw(t); }
+  /* The prop's screen is about 55 x 30 mm. At that size a dense panel is
+     unreadable — and TOS screens were sparse anyway — so the small screen
+     carries one headline reading and a trace, and the magnified view
+     carries the full panel. */
+  const compact = C.W < 240;
+  try{ compact && m.brief ? drawBrief(m,t) : m.draw(t); }
   catch(e){
     C.text(P,40,"SCAN FAULT",{size:12,color:"#e2483d",spacing:2});
     C.wrap(P,58,String(e&&e.message||e),C.W-P*2,{size:8,color:"#e2483d",spacing:1.1},10);
@@ -1959,14 +1980,15 @@ function frame(){
   APP.alert = (APP.mode==="GEO"&&s.mag.ok&&s.mag.base!=null&&Math.abs(s.mag.mag-s.mag.base)>35)
            || (APP.mode==="EM"&&s.audio.hum)
            || (APP.mode==="BIO"&&s.camera.bpm>120);
+  /* the three lamps are the only readout the prop's exterior has:
+     ivory = sensors live, yellow = activity, red = something notable */
   $("#lampG").classList.toggle("on",APP.scanning && (s.motion.ok||s.audio.ok||s.camera.ok||s.mag.ok||s.geo.ok));
   $("#lampA").classList.toggle("on",(Math.sin(t*(2+APP.intensity*10))>0));
   $("#lampR").classList.toggle("on",!!APP.alert && Math.sin(t*9)>0);
 
-  const spin=lerp(9,1.6,APP.intensity);
-  $("#disc1").style.animationDuration=spin.toFixed(2)+"s";
-  $("#disc2").style.animationDuration=(spin*1.45).toFixed(2)+"s";
-  if(APP.scanning && Audio_.on && APP.open) { Audio_.startWarble(); Audio_.setIntensity(APP.intensity); }
+  /* no moiré animation here on purpose: the tricorder's discs were
+     static — only the communicator's turned. */
+  if(APP.scanning && Audio_.on){ Audio_.startWarble(); Audio_.setIntensity(APP.intensity); }
   else Audio_.stopWarble();
 
   requestAnimationFrame(frame);
@@ -1975,26 +1997,40 @@ function frame(){
 /* =====================================================================
    L. BOOT
    ===================================================================== */
-function openHood(open){
-  APP.open=open;
-  $("#device").classList.toggle("open",open);
+function openDrawer(el,open){
+  el.classList.toggle("open",open==null? !el.classList.contains("open") : open);
   Audio_.thunk();
-  setTimeout(()=>SCR.resize(),380);
-  if(open){ SENSORS.startMotion(); SENSORS.startOrient(); }
+  /* opening a drawer is a user gesture, which is what iOS wants before
+     it will hand over the motion sensors */
+  SENSORS.startMotion(); SENSORS.startOrient();
 }
 
 function wire(){
-  $("#hood").addEventListener("click",()=>openHood(!APP.open));
-  $("#latch").addEventListener("click",e=>{ e.stopPropagation(); openHood(!APP.open); });
-  $("#doorLower").addEventListener("click",e=>{ e.stopPropagation();
-    $("#comp-lower").classList.toggle("open"); Audio_.thunk(); });
-  $("#scanner").addEventListener("click",async e=>{
+  $("#screen-bezel").addEventListener("click",()=>setZoom(true));
+  $("#chipClose").addEventListener("click",()=>setZoom(false));
+
+  $("#drawerUpper").addEventListener("click",e=>{
+    e.stopPropagation();
+    openDrawer($("#drawerUpper"));
+    if($("#drawerUpper").classList.contains("open")) flash("UPPER DRAWER — MOIRÉ AND DATA DISCS");
+  });
+  $("#drawerLower").addEventListener("click",e=>{
+    e.stopPropagation();
+    openDrawer($("#drawerLower"));
+    if($("#drawerLower").classList.contains("open")) flash("LOWER DRAWER — MEDICAL HAND SCANNER");
+  });
+  $("#scanner").addEventListener("click",e=>{
     e.stopPropagation();
     $("#scanner").classList.add("active");
     setMode("BIO");
     flash("HAND SCANNER ENGAGED — PLACE A FINGERTIP OVER THE LENS");
     setTimeout(()=>$("#scanner").classList.remove("active"),4000);
   });
+
+  $("#chipScan").addEventListener("click",e=>{
+    APP.scanning=!APP.scanning; e.target.classList.toggle("on",!APP.scanning);
+    flash(APP.scanning?"SCANNING":"SCAN HELD"); });
+  $("#chipMark").addEventListener("click",recordScan);
   $("#chipSound").addEventListener("click",e=>{
     const on=Audio_.toggle(); e.target.classList.toggle("on",on); flash(on?"AUDIO ON":"AUDIO MUTED"); });
   $("#chipVoice").addEventListener("click",e=>{
@@ -2005,15 +2041,15 @@ function wire(){
   $("#chipRec").addEventListener("click",toggleVoiceMemo);
   $("#chipLib").addEventListener("click",openLibrary);
   $("#chipInfo").addEventListener("click",openInfo);
+
   addEventListener("keydown",e=>{
     const i=parseInt(e.key,10);
     if(i>=1&&i<=8) setMode(MODE_ORDER[i-1]);
-    if(e.key==="h"||e.key==="H") openHood(!APP.open);
+    if(e.key==="z"||e.key==="Z") setZoom(!APP.zoom);
     if(e.key===" "){ APP.scanning=!APP.scanning; e.preventDefault(); }
     if(e.key==="m"||e.key==="M") recordScan();
-    if(e.key==="Escape") closeModal();
+    if(e.key==="Escape"){ if($("#modal").classList.contains("show")) closeModal(); else setZoom(false); }
   });
-  /* double-tap the ticker to see the full recorder */
   $("#ticker").addEventListener("click",openLogDetail);
 }
 
@@ -2023,13 +2059,16 @@ async function boot(){
   await LOG.open();
   SENSORS.startMag(); SENSORS.startLight(); SENSORS.startPower();
   await SENSORS.startMotion(); await SENSORS.startOrient();
-  openHood(true);
   Audio_.chirp(true);
   setMode("GEO");
-  flash("TRICORDER ACTIVE. ALL READINGS ORIGINATE ON THIS UNIT.");
+  /* the screen is small on the real object; say so once, then get out
+     of the way */
+  flash("TRICORDER ACTIVE. TAP THE SCREEN TO MAGNIFY IT.");
+  $("#screen-bezel").classList.add("zoom-hint");
+  setTimeout(()=>$("#screen-bezel").classList.remove("zoom-hint"),6000);
 }
 
-buildMoire(); SCR.init(); UI.build(); wire();
+buildMoire(); SCR.init(); APP_CONTROLS.build(); wire();
 $("#chipSound").classList.add("on");
 $("#bootBtn").addEventListener("click",boot);
 requestAnimationFrame(frame);
