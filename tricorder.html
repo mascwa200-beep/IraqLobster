@@ -131,7 +131,7 @@ body{
   box-shadow:inset 0 3px 7px rgba(0,0,0,.85), inset 0 -1px 0 rgba(255,255,255,.25),
              0 0 0 1px rgba(0,0,0,.35);
 }
-#screen{display:block;width:100%;height:100%}
+#screen{position:absolute;inset:0;display:block;width:100%;height:100%}
 /* the curved glass over it */
 #screen-bezel::after{
   content:"";position:absolute;inset:0;pointer-events:none;border-radius:inherit;
@@ -291,47 +291,70 @@ body{
 #zoom{
   position:fixed;inset:0;z-index:30;display:none;
   background:rgba(3,3,3,.94);
-  flex-direction:column;justify-content:center;gap:10px;
-  padding:10px 10px 86px;overflow:auto;
+  flex-direction:column;justify-content:flex-start;gap:9px;
+  padding:10px 10px 122px;overflow-y:auto;-webkit-overflow-scrolling:touch;
 }
 #zoom.show{display:flex}
 #zoom-screen-wrap{
-  flex:0 1 auto;margin:0 auto;width:100%;max-width:560px;
+  flex:none;margin:0 auto;width:100%;max-width:560px;
   aspect-ratio:1.47;             /* the same window, only bigger */
   border-radius:14px / 16px;overflow:hidden;position:relative;
   background:#3f423e;box-shadow:inset 0 3px 10px rgba(0,0,0,.85), 0 0 0 3px #6e706c, 0 0 40px rgba(0,0,0,.9);
 }
-#zoom-screen{display:block;width:100%;height:100%}
+#zoom-screen{position:absolute;inset:0;display:block;width:100%;height:100%}
 #zoom-controls{
   flex:none;padding:8px 0 10px;display:flex;flex-direction:column;gap:7px;
   max-width:560px;width:100%;margin:0 auto;
 }
 #modebar{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
 .btn{
-  appearance:none;border:1px solid #4a463c;border-radius:3px;
+  appearance:none;border:1px solid #4a463c;border-radius:4px;
   background:linear-gradient(180deg,#26241e,#141310);
   color:#cfc9b4;font:inherit;text-transform:uppercase;
-  font-size:clamp(9px,2.4vw,12px);letter-spacing:.18em;
-  padding:11px 2px;cursor:pointer;
+  padding:9px 2px;cursor:pointer;line-height:1.15;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
 }
+.btn b{font-size:clamp(11px,3vw,14px);letter-spacing:.16em;font-weight:800}
+.btn i{font-size:clamp(8px,2.2vw,10px);letter-spacing:.08em;font-style:normal;opacity:.75}
+.big-btn{
+  appearance:none;width:100%;border:1px solid #e6c657;border-radius:4px;
+  background:linear-gradient(180deg,#c9a227,#8a6f18);color:#140f02;font:inherit;
+  font-size:clamp(13px,3.6vw,16px);letter-spacing:.18em;font-weight:800;
+  padding:14px 8px;cursor:pointer;text-transform:uppercase;
+}
+.row-btn{
+  appearance:none;flex:1;border:1px solid #4a463c;border-radius:4px;
+  background:#1b1a15;color:#d8d2bd;font:inherit;font-size:clamp(10px,2.7vw,12px);
+  letter-spacing:.12em;padding:12px 4px;cursor:pointer;text-transform:uppercase;
+}
+.row-btn.on{background:var(--ink-amber);color:#140f02;border-color:#e6c657}
+.ctl-row{display:flex;gap:6px}
 .btn.sel{background:linear-gradient(180deg,#c9a227,#8a6f18);color:#140f02;border-color:#e6c657}
 #utilrow{display:flex;gap:6px;justify-content:space-between;flex-wrap:wrap}
-.chip{border:1px solid #3a362e;border-radius:3px;padding:7px 9px;background:#16150f;
-  cursor:pointer;color:#a8a291;font-size:9px;letter-spacing:.18em;flex:1;text-align:center}
+.chip{border:1px solid #3a362e;border-radius:4px;padding:11px 8px;background:#16150f;
+  cursor:pointer;color:#bdb7a4;font-size:clamp(10px,2.6vw,12px);letter-spacing:.12em;
+  flex:1 1 30%;text-align:center;text-transform:uppercase}
 .chip.on{color:#140f02;background:var(--ink-amber);border-color:#e6c657}
-.slider{display:flex;align-items:center;gap:8px;font-size:9px;letter-spacing:.18em;color:#8d8875}
+.slider{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.1em;color:#a8a291}
+.slider span{min-width:96px;text-transform:none}
 .slider input{flex:1;accent-color:#c9a227}
 
 /* ---------- 7. READOUT TICKER (how TOS made data readable) ------- */
 #ticker{
   position:fixed;left:0;right:0;bottom:0;z-index:40;
-  background:linear-gradient(180deg,rgba(6,6,5,.92),rgba(0,0,0,.98));
-  border-top:1px solid #35322b;padding:8px 12px;cursor:pointer;
-  font-size:clamp(9px,2.4vw,12px);line-height:1.45;letter-spacing:.1em;
-  color:var(--ink-amber);min-height:56px;max-height:80px;overflow:hidden;
-  text-shadow:0 0 8px rgba(245,208,58,.25);
+  background:linear-gradient(180deg,rgba(6,6,5,.94),rgba(0,0,0,.99));
+  border-top:2px solid #4a463c;padding:10px 14px 12px;cursor:pointer;
+  min-height:92px;max-height:30vh;overflow:auto;
 }
-#ticker .who{color:#8d8875;letter-spacing:.28em;font-size:.82em}
+#ticker .plain{
+  font-size:clamp(15px,4.6vw,21px);line-height:1.32;letter-spacing:.04em;
+  color:#fffdf3;text-transform:none;font-weight:700;margin-top:3px;
+}
+#ticker .trek{
+  font-size:clamp(11px,3.2vw,14px);line-height:1.4;letter-spacing:.06em;
+  color:var(--ink-amber);margin-top:6px;text-transform:none;font-style:italic;
+}
+#ticker .who{color:#8d8875;letter-spacing:.2em;font-size:11px;display:block}
 
 /* ---------- 8. OVERLAYS ------------------------------------------ */
 #boot{
@@ -372,7 +395,7 @@ body{
 .chip.on{color:#140f02;background:var(--ink-amber);border-color:#e6c657}
 
 @media (max-height:620px){
-  #stage{padding-bottom:64px}
+  #stage{padding-bottom:104px}
   #ticker{min-height:42px;max-height:60px;padding:5px 8px}
   .btn{padding:7px 2px}
 }
@@ -447,28 +470,36 @@ body{
   <div id="zoom-screen-wrap"><canvas id="zoom-screen"></canvas></div>
   <div id="zoom-controls">
     <div id="modebar"></div>
+    <button class="big-btn" id="btnReport">FULL SCAN — READ IT OUT</button>
+    <button class="row-btn" id="btnCrew" style="flex:none">CREW: MR. SPOCK</button>
+    <div class="ctl-row">
+      <button class="row-btn" id="btnCam">CAMERA</button>
+      <button class="row-btn" id="btnMic">MICROPHONE</button>
+      <button class="row-btn" id="btnGps">POSITION</button>
+      <button class="row-btn" id="btnSpot">MARK SPOT</button>
+    </div>
     <div class="slider"><span>RANGE</span><input type="range" id="rangeCtl" min="0" max="100" value="50"></div>
-    <div class="slider"><span>GAIN</span><input type="range" id="gainCtl" min="0" max="100" value="50"></div>
+    <div class="slider"><span>SENSITIVITY</span><input type="range" id="gainCtl" min="0" max="100" value="50"></div>
     <div id="utilrow">
-      <span class="chip" id="chipScan">SCAN</span>
-      <span class="chip" id="chipMark">MARK</span>
-      <span class="chip" id="chipSound">AUDIO</span>
-      <span class="chip" id="chipVoice">VOICE</span>
-      <span class="chip" id="chipRec">RECORD</span>
+      <span class="chip" id="chipScan">PAUSE</span>
+      <span class="chip" id="chipMark">SAVE READING</span>
+      <span class="chip" id="chipSound">SOUND</span>
+      <span class="chip" id="chipVoice">SPEAK ALOUD</span>
+      <span class="chip" id="chipRec">VOICE NOTE</span>
       <span class="chip" id="chipLib">LIBRARY</span>
-      <span class="chip" id="chipInfo">INFO</span>
-      <span class="chip" id="chipClose">CLOSE</span>
+      <span class="chip" id="chipInfo">HELP</span>
+      <span class="chip" id="chipClose">BACK TO UNIT</span>
     </div>
   </div>
 </div>
 
 <div id="boot">
-  <div>STARFLEET TRICORDER — TYPE I</div>
-  <div style="color:#7d7866">SENSOR / RECORDER / COMPUTER</div>
-  <button id="bootBtn">ACTIVATE</button>
-  <small>Everything runs on this device. No network, no accounts, no uploads.
-  Sensor access is asked for only when a scan needs it, and it is never transmitted.
-  Not a medical device — biological readings are estimates for entertainment.</small>
+  <div style="font-size:15px;letter-spacing:.3em">STARFLEET TRICORDER</div>
+  <div style="color:#7d7866">SENSOR · RECORDER · COMPUTER</div>
+  <button id="bootBtn">TURN IT ON</button>
+  <small>It reads the real sensors in your phone and tells you what they say — in plain words, and
+  in the voice of whichever member of the landing party you choose.
+  <br><br>Nothing you scan leaves this phone. Life-sign readings are for fun, not medicine.</small>
 </div>
 
 <div id="modal"><div class="sheet" id="modalSheet"></div></div>
@@ -1225,17 +1256,25 @@ const LOG = {
    ===================================================================== */
 const SAY = {
   last:"", voice:false, lastSpoke:0,
-  set(who,line){
-    if(line===this.last) return;
-    this.last=line;
-    $("#ticker").innerHTML='<span class="who">'+who+'</span><br><span id="tickerText">'+line+'</span>';
-    if(this.voice && nowMs()-this.lastSpoke>3400) this.speak(line);
+  /* plain words on top, in the officer's voice underneath: the same
+     reading said twice, once for clarity and once for the part that is
+     supposed to be fun */
+  set(who,plain,trek){
+    const key=plain+"|"+trek;
+    if(key===this.last) return;
+    this.last=key;
+    $("#ticker").innerHTML =
+      '<span class="who">'+who+'</span>'+
+      '<div class="plain">'+plain+'</div>'+
+      (trek? '<div class="trek">'+trek+'</div>' : '');
+    if(this.voice && nowMs()-this.lastSpoke>4200) this.speak(trek||plain);
   },
   speak(line){
     if(!window.speechSynthesis) return;
     try{
-      const u=new SpeechSynthesisUtterance(line.replace(/—/g," "));
-      u.rate=0.94; u.pitch=0.82; u.volume=0.9;
+      const c=CREW[APP.crew]||CREW.SPOCK;
+      const u=new SpeechSynthesisUtterance(line.replace(/—/g," ").replace(/·/g," "));
+      u.rate=(c.voice&&c.voice.rate)||0.92; u.pitch=(c.voice&&c.voice.pitch)||0.8; u.volume=0.95;
       speechSynthesis.cancel(); speechSynthesis.speak(u);
       this.lastSpoke=nowMs();
     }catch(e){}
@@ -1253,7 +1292,8 @@ const APP = {
   range:0.5, gain:0.5,          /* the two knurled knobs                 */
   insert:0,                      /* which screen insert is fitted        */
   waypoint:null,                 /* stored beam-down point               */
-  t0:nowMs(), alert:false, intensity:0, zoom:false
+  t0:nowMs(), alert:false, intensity:0, zoom:false,
+  crew:"SPOCK"                  /* who is reading the unit out loud */
 };
 const INSERTS=["science","medical","data"];
 const C=SCR;
@@ -1713,9 +1753,13 @@ function buildMoire(){
 const APP_CONTROLS = {
   build(){
     const bar=$("#modebar");
+    const PLAIN={GEO:"METAL & ROCK",MET:"LIGHT & AIR",BIO:"LIFE SIGNS",EM:"ENERGY",
+                 NAV:"WHERE AM I",LOG:"SAVED",LIB:"LIBRARY",DIAG:"SENSORS"};
     MODE_ORDER.forEach(id=>{
       const b=document.createElement("button");
-      b.className="btn"+(id===APP.mode?" sel":""); b.textContent=MODES[id].label; b.dataset.mode=id;
+      b.className="btn"+(id===APP.mode?" sel":"");
+      b.innerHTML="<b>"+MODES[id].label+"</b><i>"+PLAIN[id]+"</i>";
+      b.dataset.mode=id;
       b.addEventListener("click",()=>setMode(id));
       bar.appendChild(b);
     });
@@ -1915,6 +1959,7 @@ function openLogDetail(){
 /* the sparse readout the small screen shows */
 function drawBrief(m,t){
   const W=C.W,H=C.H,k=IK(),b=m.brief();
+  const R=APP.reading||interpret(APP.mode);
   /* the screen aperture is a rounded square with a generous radius, so
      everything is kept inside a safe inset rather than the flat margin */
   const px=Math.max(P,W*0.09), py=Math.max(4,H*0.10);
@@ -1922,12 +1967,370 @@ function drawBrief(m,t){
   C.text(W-px,py+7,APP.scanning?"SCAN":"HOLD",
     {size:8,color:APP.scanning?k.dim:"#e2483d",align:"right",spacing:1.2});
   C.rule(px,py+11,W-px,py+11,k.rule,1);
-  const big=Math.min(26,H*0.30);
-  const wv=C.text(px,py+13+big,b.v,{size:big,color:b.c,spacing:1.4});
-  if(b.u) C.text(px+wv+4,py+13+big,b.u,{size:big*0.38,color:b.c,spacing:1.1,raw:true});
-  C.text(px,H-py-2,b.l,{size:8,color:k.dim,spacing:1.5});
-  if(b.ring && b.ring.len>4)
-    C.trace(W*0.54,py+14,W*0.46-px,H*0.44,b.ring,b.c,{glow:true,width:1.4});
+
+  const hasNumber = b.v && b.v!=="—";
+  if(hasNumber){
+    const big=Math.min(26,H*0.30);
+    const wv=C.text(px,py+13+big,b.v,{size:big,color:b.c,spacing:1.4});
+    if(b.u) C.text(px+wv+4,py+13+big,b.u,{size:big*0.38,color:b.c,spacing:1.1,raw:true});
+    C.fit(px,H-py-2,R.big,W-px*2,{size:10,color:k.fg,spacing:1.4});
+    if(b.ring && b.ring.len>4)
+      C.trace(W*0.54,py+14,W*0.46-px,H*0.44,b.ring,b.c,{glow:true,width:1.4});
+  }else{
+    /* no number to show — say the thing in words instead of a dash */
+    C.wrap(px,py+26,R.big,W-px*2,{size:Math.min(15,H*0.17),color:b.c,spacing:1.4},
+           Math.min(18,H*0.2));
+    C.fit(px,H-py-2,"SEE THE WORDS BELOW",W-px*2,{size:8,color:k.dim,spacing:1.3});
+  }
+}
+
+/* =====================================================================
+   M. THE LANDING PARTY — two jobs at once.
+
+   First, plain language. Every reading is stated in words anyone can
+   read: NO METAL NEARBY, IT IS DARK HERE, HEART RATE 72. The numbers do
+   not go away, they move underneath.
+
+   Second, the roleplay. Whatever the phone actually measures is turned
+   into the sentence a Star Trek officer would say about it, in the voice
+   of whichever crew member is holding the unit. The numbers are real;
+   the interpretation is in character.
+   ===================================================================== */
+const CREW = {
+  SPOCK:{ name:"MR. SPOCK", role:"SCIENCE OFFICER", voice:{pitch:0.72,rate:0.88},
+    open:["READINGS, CAPTAIN.","SENSORS INDICATE THE FOLLOWING.","THE TRICORDER REGISTERS THIS."],
+    metal:{none:["NO SIGNIFICANT METALLIC MASS WITHIN RANGE.","THE SURROUNDING MATERIAL IS INERT. NO ORE OF INTEREST."],
+      trace:["TRACE METALLIC CONCENTRATION. NOT UNUSUAL FOR THIS TERRAIN."],
+      some:["A SUBSTANTIAL FERROUS DEPOSIT LIES NEARBY. CURIOUS."],
+      lots:["THE READING IS OFF SCALE. A MASS OF REFINED METAL — POSSIBLY ARTIFICIAL. FASCINATING."]},
+    light:{dark:["ILLUMINATION IS NEGLIGIBLE. WE ARE EFFECTIVELY BLIND WITHOUT INSTRUMENTS."],
+      dim:["LIGHT LEVELS ARE LOW BUT WORKABLE."],
+      indoor:["ARTIFICIAL ILLUMINATION. WE ARE WITHIN A STRUCTURE."],
+      day:["FULL DAYLIGHT. THE PRIMARY IS WELL ABOVE THE HORIZON."]},
+    star:["THE LOCAL PRIMARY APPEARS TO BE A {CLASS} STAR — COLOUR TEMPERATURE {K} KELVIN."],
+    power:{none:["NO PERIODIC ENERGY SIGNATURE. NOTHING IS GENERATING POWER NEARBY."],
+      yes:["A REGULAR {HZ} HERTZ EMISSION. THAT IS NOT NATURAL, CAPTAIN. SOMETHING IS RUNNING."]},
+    life:{none:["I READ NO LIFE FORMS BUT OUR OWN."],
+      one:["ONE LIFE FORM. HUMAN, BY THE CARDIAC RHYTHM."],
+      many:["MULTIPLE LIFE SIGNS IN THE IMMEDIATE AREA."]},
+    close:["A LOGICAL CONCLUSION IS NOT YET AVAILABLE. I RECOMMEND FURTHER SCANNING.",
+      "I SHALL REQUIRE ADDITIONAL DATA BEFORE SPECULATING."] },
+
+  MCCOY:{ name:"DR. McCOY", role:"CHIEF MEDICAL OFFICER", voice:{pitch:0.62,rate:0.94},
+    open:["ALL RIGHT, LET'S HAVE A LOOK.","I'M A DOCTOR, NOT A GEOLOGIST — BUT HERE IT IS."],
+    metal:{none:["Nothing but dirt and rock down here."],trace:["A LITTLE METAL IN THE GROUND. NOTHING TO GET EXCITED ABOUT."],
+      some:["THERE'S A GOOD DEAL OF METAL AROUND US, JIM."],lots:["THAT'S A WALL OF METAL. SOMEBODY BUILT SOMETHING HERE."]},
+    light:{dark:["IT'S BLACK AS A TOMB IN HERE."],dim:["NOT MUCH LIGHT. WATCH YOUR FOOTING."],
+      indoor:["ARTIFICIAL LIGHT. WE'RE INDOORS, OR SOMETHING WANTS US TO THINK SO."],
+      day:["GOOD DAYLIGHT. AT LEAST WE CAN SEE WHAT'S TRYING TO KILL US."]},
+    star:["SUNLIGHT LOOKS {CLASS}-ISH. {K} KELVIN, IF YOU CARE ABOUT THAT SORT OF THING."],
+    power:{none:["NOTHING RUNNING NEARBY. QUIET AS A GRAVE."],
+      yes:["SOMETHING'S HUMMING AT {HZ} HERTZ. THERE'S MACHINERY CLOSE BY."]},
+    life:{none:["NO LIFE SIGNS. NOT EVEN A BUG."],
+      one:["ONE HEARTBEAT — {BPM} A MINUTE. {VERDICT}"],
+      many:["I'M PICKING UP SEVERAL LIFE SIGNS."]},
+    close:["I'D SAY WE'VE SEEN ENOUGH. LET'S GET BACK TO THE SHIP.",
+      "DAMMIT, JIM, THIS THING ONLY TELLS YOU WHAT'S THERE — NOT WHAT IT MEANS."] },
+
+  SCOTTY:{ name:"MR. SCOTT", role:"CHIEF ENGINEER", voice:{pitch:0.68,rate:0.9},
+    open:["AYE, HERE'S WHAT SHE'S READIN'.","LET'S SEE WHAT WE'VE GOT."],
+    metal:{none:["NOT A SCRAP OF USEFUL METAL HEREABOUTS."],trace:["A WEE BIT OF ORE IN THE ROCK."],
+      some:["NOW THAT'S A PROPER DEPOSIT. WE COULD DO SOMETHIN' WITH THAT."],
+      lots:["THAT'S REFINED METAL, OR I'M A CLINGON. SOMEBODY'S BEEN BUSY DOWN HERE."]},
+    light:{dark:["DARK AS THE INSIDE OF A WARP NACELLE."],dim:["POOR LIGHT FOR FINE WORK."],
+      indoor:["ARTIFICIAL LIGHTIN'. SOMEBODY'S PAYIN' THE POWER BILL."],
+      day:["GRAND DAYLIGHT."]},
+    star:["THE SUN HERE READS {CLASS} CLASS, ABOUT {K} KELVIN."],
+    power:{none:["NO POWER SIGNATURE AT ALL. NOTHIN' RUNNIN'."],
+      yes:["THERE'S A {HZ} HERTZ HUM — THAT'S A GENERATOR, AND IT'S CLOSE."]},
+    life:{none:["NO LIFE SIGNS BUT OURS."],one:["ONE HEARTBEAT, {BPM} TO THE MINUTE."],
+      many:["SEVERAL LIFE SIGNS, CAPTAIN."]},
+    close:["SHE'S GIVIN' US ALL SHE'S GOT.","I CANNAE GET MORE OUT OF HER WITHOUT BETTER SENSORS."] },
+
+  UHURA:{ name:"LT. UHURA", role:"COMMUNICATIONS OFFICER", voice:{pitch:1.15,rate:0.95},
+    open:["RECORDING NOW. HERE IS WHAT WE HAVE.","LOGGING THIS FOR THE SHIP."],
+    metal:{none:["NO METALLIC MASS ON THIS FREQUENCY."],trace:["A FAINT METALLIC RETURN."],
+      some:["A STRONG METALLIC RETURN, BEARING CLOSE."],lots:["THE RETURN IS SATURATING. HEAVY METAL, VERY NEAR."]},
+    light:{dark:["NO AMBIENT LIGHT TO SPEAK OF."],dim:["LOW LIGHT."],
+      indoor:["ARTIFICIAL LIGHTING, STEADY SOURCE."],day:["FULL DAYLIGHT ON THE SURFACE."]},
+    star:["LOCAL STARLIGHT IS {CLASS} CLASS, {K} KELVIN."],
+    power:{none:["NO CARRIER, NO HUM. THE BAND IS QUIET."],
+      yes:["I HAVE A STEADY {HZ} HERTZ SIGNAL. THAT'S EQUIPMENT, NOT WEATHER."]},
+    life:{none:["NO LIFE SIGNS ON THIS SWEEP."],one:["ONE LIFE SIGN, CARDIAC RATE {BPM}."],
+      many:["MULTIPLE LIFE SIGNS."]},
+    close:["I'LL RELAY ALL OF IT TO THE SHIP.","THE ENTIRE SWEEP IS IN THE LOG, CAPTAIN."] },
+
+  CHEKOV:{ name:"ENS. CHEKOV", role:"NAVIGATOR", voice:{pitch:1.05,rate:1.0},
+    open:["READINGS COMING IN NOW, KEPTIN.","I HAVE IT ON THE SCANNER."],
+    metal:{none:["NO METAL, KEPTIN. NOTHING AT ALL."],trace:["A SMALL AMOUNT OF METAL."],
+      some:["A LARGE METAL DEPOSIT, KEPTIN!"],lots:["ENORMOUS METAL MASS! THIS WAS MADE BY SOMEONE."]},
+    light:{dark:["IT IS VERY DARK HERE."],dim:["THE LIGHT IS POOR."],
+      indoor:["ARTIFICIAL LIGHT — WE ARE INSIDE SOMETHING."],day:["BRIGHT DAYLIGHT, KEPTIN."]},
+    star:["THE STAR IS {CLASS} CLASS, {K} KELVIN — LIKE THE ONES OVER RUSSIA."],
+    power:{none:["NO MACHINES RUNNING. IT IS QUIET."],
+      yes:["A HUM AT {HZ} HERTZ, KEPTIN — THERE IS A MACHINE NEARBY."]},
+    life:{none:["NO LIFE SIGNS."],one:["ONE LIFE SIGN, HEART RATE {BPM}."],many:["MANY LIFE SIGNS, KEPTIN!"]},
+    close:["I WILL PLOT OUR POSITION AND KEEP SCANNING.","WE SHOULD REPORT THIS, KEPTIN."] },
+
+  KIRK:{ name:"CAPT. KIRK", role:"COMMANDING OFFICER", voice:{pitch:0.8,rate:0.86},
+    open:["KIRK HERE. LANDING PARTY REPORT.","LET'S SEE WHAT WE'RE STANDING ON."],
+    metal:{none:["NO METAL WORTH THE TRIP."],trace:["SOME METAL IN THE GROUND."],
+      some:["THERE'S A LOT OF METAL HERE. WORTH A CLOSER LOOK."],
+      lots:["THAT MUCH METAL DOESN'T HAPPEN BY ACCIDENT. SOMETHING BUILT THIS."]},
+    light:{dark:["IT'S DARK. PHASERS ON STUN, EVERYONE STAY CLOSE."],dim:["LOW LIGHT. STAY TOGETHER."],
+      indoor:["ARTIFICIAL LIGHT. WE'RE INSIDE SOMEONE ELSE'S HOUSE."],day:["FULL DAYLIGHT. GOOD."]},
+    star:["THE SUN HERE IS A {CLASS} STAR, {K} KELVIN."],
+    power:{none:["NOTHING RUNNING. WE'RE ALONE OUT HERE."],
+      yes:["A {HZ} HERTZ HUM. SOMEONE'S POWER IS ON, AND SOMEONE HAD TO SWITCH IT ON."]},
+    life:{none:["NO LIFE SIGNS."],one:["ONE LIFE SIGN. HEART RATE {BPM}."],many:["MULTIPLE LIFE SIGNS. STAY ALERT."]},
+    close:["ENTERPRISE, STAND BY TO BEAM US UP.","LOG IT. WE MOVE ON."] }
+};
+const CREW_ORDER=["SPOCK","MCCOY","SCOTTY","UHURA","CHEKOV","KIRK"];
+
+/* pick a line, changing slowly so the readout does not flicker */
+function pick(arr,seed){
+  if(!arr||!arr.length) return "";
+  const slot=Math.floor((nowMs()/9000)+(seed||0));
+  return arr[slot%arr.length];
+}
+function crewSay(topic,level,facts,seed){
+  const c=CREW[APP.crew]||CREW.SPOCK;
+  const bank=c[topic];
+  let line = Array.isArray(bank)? pick(bank,seed) : pick(bank&&bank[level],seed);
+  if(!line) return "";
+  line=line.toUpperCase();
+  Object.keys(facts||{}).forEach(k=>{ line=line.split("{"+k+"}").join(String(facts[k]).toUpperCase()); });
+  return line;
+}
+
+/* the colour temperature of the light around you, read as a star class —
+   real measurement, in-universe interpretation */
+function starClass(k){
+  if(k==null) return null;
+  if(k<3000) return {c:"M-TYPE RED DWARF", plain:"very warm, orange light"};
+  if(k<4200) return {c:"K-TYPE ORANGE", plain:"warm light"};
+  if(k<5300) return {c:"G-TYPE, LIKE SOL", plain:"yellow-white light, like our sun"};
+  if(k<6500) return {c:"F-TYPE WHITE", plain:"white daylight"};
+  if(k<8500) return {c:"A-TYPE BLUE-WHITE", plain:"cool blue-white light"};
+  return {c:"B-TYPE BLUE GIANT", plain:"very blue light"};
+}
+
+/* how many life signs the unit can honestly claim */
+function lifeSigns(){
+  const s=SENSORS.state;
+  if(s.camera.bpm) return {n:1, bpm:Math.round(s.camera.bpm)};
+  const moving = s.motion.ok && s.motion.ring.sd()>0.35;
+  const sound  = s.audio.ok && s.audio.db>-38;
+  if(moving||sound) return {n:1, bpm:null};
+  return {n:0, bpm:null};
+}
+
+/* ---- the full landing-party report ---------------------------------
+   One press gathers every sensor this phone actually has and writes the
+   speech a science officer would give. This is the thing to read aloud. */
+function landingPartyReport(){
+  const s=SENSORS.state, c=CREW[APP.crew]||CREW.SPOCK, out=[], plain=[];
+  out.push(crewSay("open",null,{},1));
+
+  if(s.mag.ok && s.mag.base!=null){
+    const d=Math.abs(s.mag.mag-s.mag.base);
+    const lvl = d<3?"none": d<12?"trace": d<40?"some":"lots";
+    out.push(crewSay("metal",lvl,{},2));
+    plain.push(lvl==="none"?"No metal nearby.":lvl==="trace"?"A little metal nearby."
+      :lvl==="some"?"A lot of metal nearby.":"A huge amount of metal nearby.");
+  }
+  const lux = s.light.lux!=null? s.light.lux : (s.camera.ok? Math.pow(s.camera.lum/255,2.2)*1100 : null);
+  if(lux!=null){
+    const lvl = lux<3?"dark": lux<80?"dim": lux<600?"indoor":"day";
+    out.push(crewSay("light",lvl,{},3));
+    plain.push(lvl==="dark"?"It is dark here.":lvl==="dim"?"The light is low here."
+      :lvl==="indoor"?"Indoor lighting.":"Bright daylight.");
+    const st=starClass(s.camera.ok? s.camera.cct : null);
+    if(st){ out.push(crewSay("star",null,{CLASS:st.c,K:s.camera.cct},4));
+      plain.push("The light around you is "+st.plain+"."); }
+  }
+  if(s.audio.ok){
+    out.push(crewSay("power",s.audio.hum?"yes":"none",{HZ:s.audio.hum||0},5));
+    plain.push(s.audio.hum? "A machine is running nearby." : "No machines running nearby.");
+  }
+  const life=lifeSigns();
+  const bpm=life.bpm;
+  out.push(crewSay("life",life.n===0?"none":"one",
+    {BPM:bpm||"UNKNOWN", VERDICT: bpm? (bpm<60?"A LITTLE SLOW.":bpm>100?"THAT'S FAST.":"NORMAL ENOUGH."):""},6));
+  plain.push(life.n===0? "No life signs." : bpm? ("One life sign. Heart rate "+bpm+" beats per minute.")
+    : "One life sign — something is moving or making noise.");
+
+  if(s.geo.lat!=null){
+    out.push("POSITION "+fmt(Math.abs(s.geo.lat),3)+" DEGREES "+(s.geo.lat>=0?"NORTH":"SOUTH")+
+             ", "+fmt(Math.abs(s.geo.lon),3)+" DEGREES "+(s.geo.lon>=0?"EAST":"WEST")+".");
+    plain.push(s.geo.acc>0? "The unit knows where you are, to about "+fmt(s.geo.acc,0)+" metres."
+                          : "The unit has a position fix.");
+  }
+  if(s.motion.ok) plain.push("Gravity here is "+fmt(s.motion.g,2)+" G"+
+    (Math.abs(s.motion.g-1)<0.08? " — the same as Earth." : "."));
+  out.push(crewSay("close",null,{},7));
+
+  const missing=["motion","mag","geo","light","audio","camera"].filter(k=>!s[k].ok);
+  return {crew:c, trek:out.filter(Boolean).join(" "), plain:plain.join(" "), missing:missing};
+}
+
+
+/* ---- plain words for every mode -------------------------------------
+   Same numbers, said the way a person talks. The technical line stays
+   underneath for anyone who wants it. */
+function interpret(id){
+  const s=SENSORS.state;
+  const none=(what,why)=>({big:"NO SENSOR", plain:"This phone has no "+what+".",
+                           tech:why||"", trek:"THE UNIT LACKS THAT SENSOR CLUSTER."});
+  switch(id){
+    case "GEO":{
+      if(!s.mag.ok && !s.motion.ok) return none("magnet or motion sensor","");
+      if(s.mag.ok && s.mag.base!=null){
+        const d=Math.abs(s.mag.mag-s.mag.base);
+        const lvl = d<3?"none": d<12?"trace": d<40?"some":"lots";
+        const big = {none:"NO METAL NEARBY",trace:"A LITTLE METAL",some:"METAL NEARBY",lots:"LOTS OF METAL"}[lvl];
+        return {big, plain:"Move the phone around. Hold it near metal and this changes.",
+          tech:"Magnetic field "+fmt(s.mag.mag,1)+" µT (normal here "+fmt(s.mag.base,1)+")",
+          trek:crewSay("metal",lvl,{},2)};
+      }
+      if(s.mag.ok) return {big:"MEASURING…", plain:"Hold still for a moment while it learns what normal is.",
+        tech:"Magnetic field "+fmt(s.mag.mag,1)+" µT", trek:crewSay("open",null,{},2)};
+      return {big:"TILT "+Math.round(s.motion.tiltDeg)+"°",
+        plain:"This phone has no magnet sensor, so GEO shows the slope and gravity instead.",
+        tech:"Gravity "+fmt(s.motion.g,2)+" G · slope "+Math.round(s.motion.tiltDeg)+"°",
+        trek:"NO MAGNETOMETER ABOARD THIS UNIT. GRAVIMETRIC READINGS ONLY."};
+    }
+    case "MET":{
+      const lux = s.light.lux!=null? s.light.lux : (s.camera.ok? Math.pow(s.camera.lum/255,2.2)*1100 : null);
+      if(lux==null) return none("light sensor and no camera turned on","Turn the camera on to measure light.");
+      const lvl = lux<3?"dark": lux<80?"dim": lux<600?"indoor":"day";
+      const big = {dark:"IT IS DARK",dim:"LOW LIGHT",indoor:"INDOOR LIGHT",day:"BRIGHT DAYLIGHT"}[lvl];
+      const st=starClass(s.camera.ok? s.camera.cct : null);
+      return {big, plain:"Point the phone at a light and this changes."+(st?" The light looks "+st.plain+".":""),
+        tech:Math.round(lux)+" lux"+(s.camera.ok?" · "+s.camera.cct+" K":"")+(s.audio.ok?" · "+fmt(s.audio.db,0)+" dB":""),
+        trek:crewSay("light",lvl,{},3)+(st? " "+crewSay("star",null,{CLASS:st.c,K:s.camera.cct},4):"")};
+    }
+    case "BIO":{
+      if(!s.camera.ok) return {big:"TURN ON CAMERA", plain:"Open the lower drawer and press the hand scanner.",
+        tech:s.camera.note, trek:"THE MEDICAL SENSOR IS NOT ENGAGED."};
+      if(!s.camera.bpm) return {big:"PUT FINGER ON LENS",
+        plain:"Cover the camera lens and its light with one fingertip. Hold still and wait about ten seconds.",
+        tech:"Signal "+Math.round((s.camera.quality||0)*100)+"%",
+        trek:"ACQUIRING CARDIAC RHYTHM. HOLD STILL."};
+      const b=Math.round(s.camera.bpm);
+      return {big:"HEART RATE "+b, plain:b<60?"That is on the slow side.":b>100?"That is fast.":"That is a normal resting range.",
+        tech:b+" beats per minute"+(s.camera.resp?" · breathing about "+Math.round(s.camera.resp)+"/min":"")+" · estimate only, not a medical device",
+        trek:crewSay("life","one",{BPM:b,VERDICT:b<60?"A LITTLE SLOW.":b>100?"THAT'S FAST.":"NORMAL ENOUGH."},6)};
+    }
+    case "EM":{
+      if(!s.audio.ok) return {big:"TURN ON MICROPHONE", plain:"Press the MICROPHONE button to listen for energy.",
+        tech:s.audio.note, trek:"THE ACOUSTIC SENSOR IS NOT ENGAGED."};
+      const loud=s.audio.db>-30;
+      return {big:s.audio.hum? "MACHINE RUNNING" : loud? "LOUD HERE" : "NOTHING RUNNING",
+        plain:s.audio.hum? "A steady hum means mains power or a motor is close by."
+                         : "No steady hum. Nothing electrical is running near you.",
+        tech:"Strongest sound "+fmt(s.audio.peakHz,0)+" Hz · level "+fmt(s.audio.db,0)+" dB",
+        trek:crewSay("power",s.audio.hum?"yes":"none",{HZ:s.audio.hum||0},5)};
+    }
+    case "NAV":{
+      if(s.geo.lat==null) return {big:"NO POSITION YET", plain:"Press the POSITION button and step outside — GPS needs a view of the sky.",
+        tech:s.geo.note, trek:"NO POSITIONAL FIX."};
+      if(APP.waypoint){
+        const d=haversine(s.geo,APP.waypoint), b=bearing(s.geo,APP.waypoint);
+        if(d<12) return {big:"YOU ARE HERE",
+          plain:"You are standing on the spot you marked. Walk away and this counts the distance back.",
+          tech:fmt(s.geo.lat,4)+", "+fmt(s.geo.lon,4)+(s.geo.acc>0?" · ±"+fmt(s.geo.acc,0)+" m":""),
+          trek:"WE ARE AT THE BEAM-DOWN COORDINATES."};
+        return {big:(d>1200?fmt(d/1000,1)+" KM":Math.round(d)+" M")+" AWAY",
+          plain:"That is how far you are from the spot you marked, "+compassOf(b)+" of you.",
+          tech:fmt(s.geo.lat,4)+", "+fmt(s.geo.lon,4)+" · ±"+fmt(s.geo.acc,0)+" m",
+          trek:"THE BEAM-DOWN POINT BEARS "+Math.round(b)+" DEGREES AT "+(d>1200?fmt(d/1000,2)+" KILOMETERS":Math.round(d)+" METERS")+"."};
+      }
+      return {big:"POSITION FOUND", plain:"Press MARK SPOT to remember where you are. Then it tells you the way back.",
+        tech:fmt(s.geo.lat,4)+", "+fmt(s.geo.lon,4)+" · ±"+fmt(s.geo.acc,0)+" m",
+        trek:"POSITION FIXED TO WITHIN "+fmt(s.geo.acc,0)+" METERS."};
+    }
+    case "LOG":{
+      const n=MODES.LOG.entries.length;
+      return {big:n? n+" SAVED":"NOTHING SAVED YET", plain:n?"Tap the words at the bottom of the screen to read them.":"Press SAVE READING to keep one.",
+        tech:"Stored on this phone only", trek:"THE RECORDER HOLDS "+n+" ENTRIES."};
+    }
+    case "LIB":{
+      return {big:"LOOK IT UP", plain:"Press LIBRARY and type a word — try CLASS M, DILITHIUM or WARP 6.",
+        tech:"Reference banks stored in the app", trek:"LIBRARY COMPUTER ONLINE. STATE YOUR QUERY."};
+    }
+    default:{
+      const on=["motion","orient","mag","geo","light","audio","camera","power"].filter(k=>s[k].ok).length;
+      return {big:on+" OF 8 WORKING", plain:on>3?"Good. This phone can do most of the scans."
+                                             :"This phone has fewer sensors. The rest will say NO SENSOR.",
+        tech:"Sensor clusters responding", trek:"DIAGNOSTIC COMPLETE. "+on+" OF 8 CLUSTERS RESPONDING."};
+    }
+  }
+}
+
+
+/* ---- one press, one spoken report ---------------------------------- */
+function showReport(){
+  const r=landingPartyReport();
+  const miss = r.missing.length
+    ? '<p style="color:#8d8875">Not measured on this phone: '+r.missing.map(m=>({motion:"movement",mag:"magnet",geo:"position",
+        light:"light sensor",audio:"microphone",camera:"camera"})[m]).join(", ")+
+      '. Turn the camera, microphone or position on to add them.</p>' : '';
+  openModal('<h2>'+r.crew.name+' — LANDING PARTY REPORT</h2>'+
+    '<p style="font-size:15px;line-height:1.55;color:#fffdf3">'+r.plain+'</p>'+
+    '<h3>Read this out loud</h3>'+
+    '<p style="font-size:14px;line-height:1.6;color:#f5d03a;font-style:italic">'+r.trek+'</p>'+
+    miss+
+    '<div><button id="repSpeak">SPEAK IT</button> <button id="repSave">SAVE TO LOG</button></div>');
+  const sp=$("#repSpeak"), sv=$("#repSave");
+  if(sp) sp.addEventListener("click",()=>SAY.speak(r.trek));
+  if(sv) sv.addEventListener("click",()=>{
+    LOG.add({mode:"REPORT",kind:"report",text:r.plain+"  //  "+r.trek,data:snapshot()});
+    MODES.LOG.loaded=false; flash("REPORT SAVED"); closeModal();
+  });
+  Audio_.chirp(true);
+}
+
+/* ---- who is holding the unit --------------------------------------- */
+function showCrew(){
+  const rows=CREW_ORDER.map(id=>{
+    const c=CREW[id];
+    return '<button class="crew-pick" data-crew="'+id+'" style="display:block;width:100%;text-align:left;'+
+      'margin:6px 0;padding:14px;border:1px solid '+(id===APP.crew?'#e6c657':'#3a362e')+';border-radius:5px;'+
+      'background:'+(id===APP.crew?'#3a2f0d':'#16150f')+';color:#e8e3d2;font:inherit;cursor:pointer">'+
+      '<b style="font-size:15px;letter-spacing:.12em">'+c.name+'</b><br>'+
+      '<span style="font-size:11px;color:#8fb6d8;letter-spacing:.1em">'+c.role+'</span></button>';
+  }).join("");
+  openModal('<h2>Who is holding the tricorder?</h2>'+
+    '<p>The readings stay the same. The way they are said to you changes.</p>'+rows);
+  $$(".crew-pick").forEach(b=>b.addEventListener("click",()=>{
+    APP.crew=b.dataset.crew;
+    $("#btnCrew").textContent="CREW: "+CREW[APP.crew].name;
+    SAY.last="";
+    flash("YOU ARE NOW "+CREW[APP.crew].name);
+    if(SAY.voice) SAY.speak(crewSay("open",null,{},1));
+    closeModal();
+  }));
+}
+
+/* ---- help, in the fewest words that will do ------------------------ */
+function showHelp(){
+  openModal('<h2>How to use this</h2>'+
+    '<ol style="font-size:15px;line-height:1.7;padding-left:20px">'+
+    '<li><b>Pick what to scan</b> with the eight keys. Each one says what it does.</li>'+
+    '<li><b>Read the bottom of the screen.</b> The white line is plain English. The gold line is your officer saying it.</li>'+
+    '<li><b>Press FULL SCAN</b> for everything at once, written out so you can read it aloud.</li>'+
+    '<li><b>Press CREW</b> to be Spock, McCoy, Scotty, Uhura, Chekov or Kirk.</li>'+
+    '</ol>'+
+    '<h3>If something says NO SENSOR</h3>'+
+    '<p>That phone does not have that part. It is not broken. Press CAMERA, MICROPHONE or POSITION to '+
+    'switch on the ones that need your permission, and try SENSORS to see what this phone has.</p>'+
+    '<h3>The three best tricks</h3>'+
+    '<p><b>Metal detector:</b> METAL &amp; ROCK, then wave the phone near a fridge, a car or a doorframe.<br>'+
+    '<b>Heart rate:</b> LIFE SIGNS, then cover the camera lens and its light with a fingertip.<br>'+
+    '<b>Find your way back:</b> WHERE AM I, press MARK SPOT, walk off, and it counts you back.</p>'+
+    '<p style="color:#8d8875">Nothing you scan leaves this phone. Life-sign readings are for fun, '+
+    'not medicine.</p>');
 }
 
 /* =====================================================================
@@ -1965,7 +2368,11 @@ function frame(){
     C.text(C.W-32,32,"HOLD",{size:9,color:"#0b0b09",align:"center",spacing:2});
   }
   C.crt(t);
-  SAY.set(m.who, APP.scanning? m.readout() : "SCAN HELD. LAST READING RETAINED.");
+  const R=interpret(APP.mode);
+  APP.reading=R;
+  const who=(CREW[APP.crew]||CREW.SPOCK).name+" — "+m.label;
+  if(APP.scanning) SAY.set(who,R.plain? R.big+". "+R.plain : R.big, R.trek);
+  else SAY.set(who,"SCAN HELD. THE LAST READING IS STILL ON SCREEN.","");
 
   /* --- intensity: one number that drives sound, lamps and moiré --- */
   const s=SENSORS.state;
@@ -2028,8 +2435,10 @@ function wire(){
   });
 
   $("#chipScan").addEventListener("click",e=>{
-    APP.scanning=!APP.scanning; e.target.classList.toggle("on",!APP.scanning);
-    flash(APP.scanning?"SCANNING":"SCAN HELD"); });
+    APP.scanning=!APP.scanning;
+    e.target.classList.toggle("on",!APP.scanning);
+    e.target.textContent=APP.scanning?"PAUSE":"RESUME";
+    flash(APP.scanning?"SCANNING AGAIN.":"PAUSED. THE LAST READING STAYS ON SCREEN."); });
   $("#chipMark").addEventListener("click",recordScan);
   $("#chipSound").addEventListener("click",e=>{
     const on=Audio_.toggle(); e.target.classList.toggle("on",on); flash(on?"AUDIO ON":"AUDIO MUTED"); });
@@ -2040,7 +2449,23 @@ function wire(){
   });
   $("#chipRec").addEventListener("click",toggleVoiceMemo);
   $("#chipLib").addEventListener("click",openLibrary);
-  $("#chipInfo").addEventListener("click",openInfo);
+  $("#chipInfo").addEventListener("click",showHelp);
+
+  $("#btnReport").addEventListener("click",showReport);
+  $("#btnCrew").addEventListener("click",showCrew);
+  $("#btnCam").addEventListener("click",async e=>{
+    await toggleCamera(); e.target.classList.toggle("on",SENSORS.state.camera.ok); });
+  $("#btnMic").addEventListener("click",async e=>{
+    await toggleAudioSensor(); e.target.classList.toggle("on",SENSORS.state.audio.ok); });
+  $("#btnGps").addEventListener("click",e=>{
+    SENSORS.startGeo(); e.target.classList.add("on"); flash("LOOKING FOR YOUR POSITION — THIS CAN TAKE A MINUTE OUTDOORS"); });
+  $("#btnSpot").addEventListener("click",()=>{
+    const g=SENSORS.state.geo;
+    if(g.lat==null){ flash("NO POSITION YET. PRESS POSITION FIRST, AND GO OUTSIDE."); return; }
+    APP.waypoint={lat:g.lat,lon:g.lon};
+    LOG.add({mode:"NAV",kind:"waypoint",text:"MARKED THIS SPOT "+fmt(g.lat,5)+", "+fmt(g.lon,5)});
+    flash("SPOT MARKED. THE UNIT WILL COUNT YOU BACK TO IT.");
+  });
 
   addEventListener("keydown",e=>{
     const i=parseInt(e.key,10);
@@ -2048,6 +2473,7 @@ function wire(){
     if(e.key==="z"||e.key==="Z") setZoom(!APP.zoom);
     if(e.key===" "){ APP.scanning=!APP.scanning; e.preventDefault(); }
     if(e.key==="m"||e.key==="M") recordScan();
+    if(e.key==="r"||e.key==="R") showReport();
     if(e.key==="Escape"){ if($("#modal").classList.contains("show")) closeModal(); else setZoom(false); }
   });
   $("#ticker").addEventListener("click",openLogDetail);
