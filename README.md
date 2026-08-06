@@ -5,7 +5,10 @@ recorder and computer** in one black case. It is one HTML file. It has no depend
 step, no framework, no external images, no external fonts, no audio files and no network calls of
 any kind.
 
-Every reading it shows comes from the hardware in the device you are holding.
+Every reading comes from the real sensors in the phone you are holding. Each one is stated twice:
+**in plain words anyone can read**, and then in the voice of whichever member of the landing party
+you choose — Spock, McCoy, Scotty, Uhura, Chekov or Kirk. The numbers are real. The interpretation
+is in character.
 
 ```
 tricorder.html          the entire application — markup, CSS, SVG artwork, all JavaScript, all data
@@ -36,7 +39,7 @@ icons and a shell script. No Gradle, no Android Gradle Plugin, no maven dependen
 
 ```sh
 ANDROID_SDK=/path/to/android-sdk ./android/build.sh
-# -> android/build/tricorder.apk   (about 53 KB)
+# -> android/build/tricorder.apk   (about 62 KB)
 ```
 
 It needs a JDK, `platforms;android-34` and `build-tools;35.0.0`. Build-tools 34 is deliberately
@@ -56,26 +59,64 @@ Minimum Android 7.0 (API 24). The APK is signed with a self-signed sideload key 
 `build.sh` on first run and kept out of the repository, so a rebuild produces a different signing
 key — uninstall before reinstalling if Android refuses the update.
 
+## Reading it
+
+The bottom of the screen is the important part, and it says everything twice:
+
+```
+MR. SPOCK — GEO
+NO METAL NEARBY. Move the phone around. Hold it near metal and this changes.
+NO SIGNIFICANT METALLIC MASS WITHIN RANGE.
+```
+
+The **white line** is plain English: what was measured and what to do about it. The **gold line** is
+your officer saying the same thing. Turn on SPEAK ALOUD and the unit reads it to you in that
+character's voice.
+
+## Be the landing party
+
+- **CREW** — choose who is holding the tricorder. Spock is precise, McCoy is exasperated, Scotty
+  talks about ore, Uhura logs it for the ship, Chekov claims things for Russia, Kirk gives orders.
+  Same readings, different officer.
+- **FULL SCAN — READ IT OUT** — one press sweeps every sensor the phone has and writes the report
+  out as a speech. A plain summary at the top, then the paragraph to read aloud, then an honest
+  list of what this phone could not measure. SPEAK IT reads it in your officer's voice; SAVE TO LOG
+  keeps it.
+- Real values become in-universe ones where the mapping is honest: the colour temperature of the
+  light around you is reported as the **class of the local star** (2700 K becomes an M-type red
+  dwarf, 5800 K becomes "G-type, like Sol"), mains hum becomes a **power source running nearby**,
+  and a pulse from the camera becomes a **life sign**.
+
 ## Controls
 
-The prop has no buttons. Three indicator lamps, a gold vent and two drawer pulls are its entire
-exterior, so the physical actions here are the ones the object actually affords — and everything
-else lives on the screen.
+The prop has no buttons — three indicator lamps, a gold vent and two drawer pulls are its entire
+exterior. So the physical actions are the ones the object actually affords, and everything else
+lives on the screen.
 
 | Control | What it does |
 | --- | --- |
-| The screen | Tap it to magnify. The prop's screen is about a fifth of the front; magnified, it is readable, and the mode keys, RANGE, GAIN and the rest appear beneath it. |
+| The screen | Tap it to magnify. The prop's screen is about a fifth of the front; magnified, everything else appears beneath it. |
+| Eight mode keys | METAL & ROCK, LIGHT & AIR, LIFE SIGNS, ENERGY, WHERE AM I, SAVED, LIBRARY, SENSORS. Keys `1`–`8`. |
+| FULL SCAN | The landing-party report. Key `r`. |
+| CREW | Choose your officer. |
+| CAMERA / MICROPHONE / POSITION | Switch on the sensors that need your permission. |
+| MARK SPOT | Remember where you are; the unit then counts you back to it. |
 | Upper drawer | Slides open on the moiré and the data discs. |
-| Lower drawer | Slides open on the medical hand scanner; press the scanner to start a biological scan. |
-| Three lamps | Ivory: sensors live. Yellow: scan activity. Red: something worth your attention. |
-| Mode keys | GEO, MET, BIO, EM, NAV, LOG, LIB, DIAG — on the magnified screen, or keys `1`–`8`. |
-| RANGE / GAIN | Sliders on the magnified screen. |
-| SCAN / MARK | Hold the scan; write the current reading to the recorder. |
-| AUDIO / VOICE | Mute the synthesised warble; have the readout spoken aloud. |
-| RECORD / LIBRARY / INFO | Voice entry; query the local banks; read what every number means. |
-| Ticker | The narration line under the unit. Tap it for the full recorder, with export and erase. |
+| Lower drawer | The medical hand scanner; press it to start a life-sign scan. |
+| Three lamps | Ivory: sensors live. Yellow: activity. Red: something notable. |
+| PAUSE / SAVE READING | Hold the scan; keep the current reading. |
+| SOUND / SPEAK ALOUD / VOICE NOTE | The warble; the spoken readout; a recorded note. |
+| LIBRARY / HELP | Look something up; four steps in big type. |
 
-Keyboard: `1`–`8` modes, `z` magnify, `space` hold the scan, `m` mark a record, `esc` back.
+Keyboard: `1`–`8` modes, `z` magnify, `r` full scan, `space` pause, `m` save, `esc` back.
+
+### The three best tricks
+
+- **Metal detector** — METAL & ROCK, then wave the phone near a fridge, a car or a doorframe.
+- **Heart rate** — LIFE SIGNS, then cover the camera lens *and its light* with one fingertip and
+  hold still for about ten seconds.
+- **Find your way back** — WHERE AM I, press MARK SPOT, walk off, and it counts you back in metres
+  and a compass bearing.
 
 ## What each reading physically is
 
@@ -101,7 +142,9 @@ Keyboard: `1`–`8` modes, `z` magnify, `space` hold the scan, `m` mark a record
 | Battery | Chromium-based browsers. |
 | Speech synthesis | Most platforms, using on-device voices. |
 
-Where the hardware is missing, the unit says `NO SENSOR` rather than inventing a number. Readings
+Where the hardware is missing, the unit says so in plain words — "This phone has no magnet sensor"
+— and offers what it *can* do instead (GEO falls back to slope and gravity) rather than inventing a
+number. Readings
 that are inferred rather than measured — illumination from the camera, colour temperature, pulse,
 respiration, infrared — are labelled as estimates on the screen that shows them.
 
