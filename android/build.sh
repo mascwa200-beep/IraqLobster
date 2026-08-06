@@ -57,8 +57,8 @@ echo "==> link resources + manifest"
   --java "$OUT/gen" \
   --min-sdk-version 24 \
   --target-sdk-version 34 \
-  --version-code 1 \
-  --version-name 1.0 \
+  --version-code 3 \
+  --version-name 1.3 \
   --auto-add-overlay
 
 echo "==> javac"

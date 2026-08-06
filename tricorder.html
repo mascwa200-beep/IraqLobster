@@ -103,6 +103,12 @@ body{
   box-shadow:inset -2px 2px 5px rgba(255,255,255,.08), inset 3px 0 6px rgba(0,0,0,.9), 0 3px 10px rgba(0,0,0,.8);
   background:linear-gradient(270deg,#000 0%,#1e1d1a 42%,#2b2926 60%,#050504 100%)}
 
+/* WebViews older than Chrome 88 have no aspect-ratio; give them the same
+   shape the hard way rather than a collapsed box. */
+@supports not (aspect-ratio: 1 / 1){
+  #device{height:min(calc(100% - 4px),640px);width:min(99vw,461px)}
+}
+
 /* ---------- 3. THE HOOD ------------------------------------------ */
 /* On the prop the screen is not hidden under a lid — it sits in a
    brushed aluminium faceplate on the hood, facing the operator, with the
@@ -497,6 +503,7 @@ body{
   <div style="font-size:15px;letter-spacing:.3em">STARFLEET TRICORDER</div>
   <div style="color:#7d7866">SENSOR · RECORDER · COMPUTER</div>
   <button id="bootBtn">TURN IT ON</button>
+  <div style="font-size:10px;letter-spacing:.2em;color:#5f5b4f" id="buildTag">BUILD —</div>
   <small>It reads the real sensors in your phone and tells you what they say — in plain words, and
   in the voice of whichever member of the landing party you choose.
   <br><br>Nothing you scan leaves this phone. Life-sign readings are for fun, not medicine.</small>
@@ -1287,6 +1294,8 @@ const band=(v,stops)=>{ for(const s of stops){ if(v<=s[0]) return s[1]; } return
    drawing and its spoken readout. GEO / MET / BIO are the three canon
    scan classes; the rest are the recorder and computer functions.
    ===================================================================== */
+const BUILD = "1.3 · 2026-08-06";   /* shown on the start screen and in HELP */
+
 const APP = {
   mode:"GEO", open:false, scanning:true,
   range:0.5, gain:0.5,          /* the two knurled knobs                 */
@@ -2330,7 +2339,10 @@ function showHelp(){
     '<b>Heart rate:</b> LIFE SIGNS, then cover the camera lens and its light with a fingertip.<br>'+
     '<b>Find your way back:</b> WHERE AM I, press MARK SPOT, walk off, and it counts you back.</p>'+
     '<p style="color:#8d8875">Nothing you scan leaves this phone. Life-sign readings are for fun, '+
-    'not medicine.</p>');
+    'not medicine.</p>'+
+    '<p style="color:#5f5b4f;font-size:11px">Build '+BUILD+'. If the unit does not look like a black '+
+    'case with two drawers and a metal faceplate, you are running an older build — reinstall, or '+
+    'clear this app\'s storage.</p>');
 }
 
 /* =====================================================================
@@ -2495,14 +2507,40 @@ async function boot(){
 }
 
 buildMoire(); SCR.init(); APP_CONTROLS.build(); wire();
+$("#buildTag").textContent="BUILD "+BUILD;
 $("#chipSound").classList.add("on");
 $("#bootBtn").addEventListener("click",boot);
 requestAnimationFrame(frame);
 
-/* offline cache — the only reason a second file exists at all */
-if("serviceWorker" in navigator && location.protocol!=="file:"){
-  addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
-}
+/* Offline cache. Inside the Android app the files are already local and
+   instant, so a service worker there buys nothing and risks serving a
+   stale build across an app update — which is exactly what it did. So on
+   that origin the app actively tears any old worker down; on the web it
+   registers one that checks for a newer build every time. */
+(function(){
+  if(!("serviceWorker" in navigator) || location.protocol==="file:") return;
+  const isAndroidApp = location.hostname==="appassets.androidplatform.net";
+  if(isAndroidApp){
+    navigator.serviceWorker.getRegistrations().then(rs=>{
+      rs.forEach(r=>{ if(r.active) r.active.postMessage("unregister"); r.unregister(); });
+    }).catch(()=>{});
+    if(window.caches) caches.keys().then(ks=>ks.forEach(k=>caches.delete(k))).catch(()=>{});
+    return;
+  }
+  addEventListener("load",()=>{
+    navigator.serviceWorker.register("sw.js",{updateViaCache:"none"})
+      .then(reg=>{
+        reg.update();
+        /* a newer build has taken over: pick it up rather than sitting on
+           the old one until every tab is closed */
+        let reloaded=false;
+        navigator.serviceWorker.addEventListener("controllerchange",()=>{
+          if(!reloaded){ reloaded=true; location.reload(); }
+        });
+      })
+      .catch(()=>{});
+  });
+})();
 </script>
 </body>
 </html>
