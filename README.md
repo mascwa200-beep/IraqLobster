@@ -59,6 +59,12 @@ Minimum Android 7.0 (API 24). The APK is signed with a self-signed sideload key 
 `build.sh` on first run and kept out of the repository, so a rebuild produces a different signing
 key — uninstall before reinstalling if Android refuses the update.
 
+**If the app does not look right, check the build.** The start screen prints the build it is
+running. WebView storage survives an app update, so an older cached copy of the page can outlive
+the APK that carried it — uninstalling clears it. The service worker no longer causes this (it is
+network-first, and the app disables it entirely on the Android asset origin), but an install made
+before that fix has to be cleared once.
+
 ## Reading it
 
 The bottom of the screen is the important part, and it says everything twice:
